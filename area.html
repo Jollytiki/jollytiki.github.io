@@ -309,7 +309,7 @@ if (typeof document !== 'undefined') {
     $('r-count').textContent = pts.length;
     $('r-dir').textContent = sa > 0 ? 'Counter-clockwise' : sa < 0 ? 'Clockwise' : '—';
 
-    if (A === 0) notes.push({ level: 'err', text: 'Zero area. The points all fall on one line.' });
+    if (A === 0 && !x.length) notes.push({ level: 'err', text: 'Zero area. The points all fall on one line.' });
     if (x.length) {
       var desc = x.slice(0, 3).map(function (pr) { return cs[pr[0]].from + '–' + cs[pr[0]].to + ' crosses ' + cs[pr[1]].from + '–' + cs[pr[1]].to; }).join('; ');
       notes.push({ level: 'err', text: 'Courses cross each other (' + desc + (x.length > 3 ? '; and more' : '') + '). Check the point order. The area shown is not right for a crossed figure.' });
