@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Civil 3D Survey Figure Tips | Jolly Tiki</title>
+<meta name="description" content="Keeping Civil 3D survey figures, point groups and surfaces clean: figure prefixes, breaklines, sites and point group order.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e; --deep: #071a1d; --panel: #12363b; --line: #1f4b51;
+    --sand: #f4e3c1; --muted: #a9bfb9; --torch: #ff8a3d; --flame: #ffc94a;
+    --hibiscus: #e8475c; --leaf: #2f8f6b; --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #071a1d; }
+  body { font-family: "Karla", system-ui, sans-serif; color: var(--sand); line-height: 1.65;
+    background: radial-gradient(ellipse at 50% -10%, #1d4f55, transparent 55%), linear-gradient(180deg, var(--night), var(--deep) 70%);
+    background-attachment: fixed; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(244,227,193,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,227,193,.035) 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .wrap { position: relative; max-width: 760px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; }
+  .brand { color: var(--flame); font-family: "Bungee", Impact, sans-serif; font-size: 1.2rem; text-decoration: none; }
+  header a.back { color: var(--muted); text-decoration: none; font-weight: 600; }
+  header a.back:hover { color: var(--flame); }
+
+  .eyebrow { font-family: "JetBrains Mono", monospace; font-size: .78rem; letter-spacing: .14em; color: var(--torch); text-transform: uppercase; margin-top: 1.5rem; }
+  h1 { font-family: "Bungee", Impact, sans-serif; color: var(--flame); font-size: clamp(1.8rem, 5vw, 2.5rem); line-height: 1.1;
+       text-shadow: 0 3px 0 var(--wood-dark); margin: .4rem 0 .8rem; }
+  .lede { font-size: 1.15rem; color: var(--sand); opacity: .92; margin-bottom: 1.5rem; }
+  article h2 { font-family: "Bungee", Impact, sans-serif; color: var(--sand); font-size: 1.2rem; letter-spacing: .02em; margin: 2.2rem 0 .6rem; }
+  article h3 { color: var(--flame); font-size: 1.05rem; margin: 1.4rem 0 .3rem; }
+  article p { margin-bottom: .9rem; color: var(--sand); opacity: .9; }
+  article ul, article ol { margin: 0 0 1rem 1.3rem; color: var(--sand); opacity: .9; }
+  article li { margin-bottom: .35rem; }
+  article strong { color: var(--flame); font-weight: 700; }
+  code { font-family: "JetBrains Mono", monospace; font-size: .88em; color: var(--sand); background: var(--deep); padding: .05rem .35rem; border-radius: 4px; }
+  .formula { font-family: "JetBrains Mono", monospace; background: var(--deep); border: 1px solid var(--line); border-radius: 10px;
+             padding: .9rem 1.1rem; margin: 0 0 1rem; color: var(--flame); overflow-x: auto; white-space: pre; line-height: 1.6; }
+  .callout { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--torch); border-radius: 0 10px 10px 0;
+             padding: .9rem 1.1rem; margin: 1.2rem 0; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .k { font-family: "JetBrains Mono", monospace; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--torch); display: block; margin-bottom: .3rem; }
+  .tablewrap { overflow-x: auto; margin: 0 0 1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td, th { padding: .45rem .5rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+  td.num { font-family: "JetBrains Mono", monospace; white-space: nowrap; }
+  .more { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+  .more h2 { font-family: "Bungee", Impact, sans-serif; font-size: 1rem; color: var(--sand); margin-bottom: .6rem; }
+  .more a { display: block; color: var(--muted); text-decoration: none; padding: .3rem 0; font-weight: 600; }
+  .more a:hover { color: var(--flame); }
+  footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/">Jolly Tiki</a>
+    <a class="back" href="/#notes">← Field Notes</a>
+  </header>
+<article>
+  <div class="eyebrow">Field Notes · Civil 3D</div>
+  <h1>Civil 3D survey figure tips</h1>
+  <p class="lede">How to keep figures, point groups and surfaces from turning into a mess, and how to fix them once they have.</p>
+
+  <p>Most Civil 3D survey headaches come from the same few places: figures nobody styled, point groups stacked in the wrong order, and every figure dumped into a surface as a breakline. None of it is hard to fix. It just has to be set up before the first import, not after the fortieth.</p>
+
+  <h2>1. Let the figure prefix database do the work</h2>
+  <p>Every figure name is matched against your <strong>figure prefix database</strong> (Prospector → Survey → Figure Prefix Databases). The prefix decides the figure's layer, style, whether it's a breakline, and which site it goes on. If a figure shows up on layer 0 with no style, it didn't match a prefix.</p>
+  <ul>
+    <li>Use the same short codes your crew uses on the data collector: <code>EP</code>, <code>TC</code>, <code>FL</code>, <code>BLDG</code>, <code>FNC</code>.</li>
+    <li>Prefixes match the <em>start</em> of the name, so <code>EP</code> catches <code>EP1</code>, <code>EP-N</code> and <code>EPX</code>. Order matters if one code starts another (<code>FL</code> vs <code>FLW</code>).</li>
+    <li>Keep one database for the whole office and put it somewhere shared. One database per project is how standards drift.</li>
+  </ul>
+
+  <h2>2. Only real breaklines get the breakline flag</h2>
+  <p>A breakline tells the surface "the ground changes slope sharply here." Edge of pavement, top and toe of slope, flowlines, curb: yes. Fences, building outlines, overhead utilities, tree lines: no. A fence surveyed at the top of a wall will quietly fold your surface into a ridge that isn't there.</p>
+  <div class="callout"><span class="k">Rule of thumb</span><p>If you'd be fine with the contours crossing the line, it isn't a breakline.</p></div>
+
+  <h2>3. Give figures their own site</h2>
+  <p>Objects on the same site interact. Figures that share a site with parcels or feature lines can split parcels and snap vertices to each other in ways you didn't ask for. Set the figure prefix to send figures to a dedicated <code>Survey</code> site, or to no site at all, and design work stays clean.</p>
+
+  <h2>4. Point groups: order is everything</h2>
+  <p>When a point is in more than one group, the group <strong>highest in the display order</strong> decides how it looks. That's why a control point sometimes shows up styled as a tree.</p>
+  <ul>
+    <li>Keep <code>_All Points</code> at the bottom, with a plain or "none" style.</li>
+    <li>Put the most specific groups (Control, Monuments) at the top.</li>
+    <li>Build groups from raw descriptions or description keys, not hand-picked point numbers, so new imports drop into the right place.</li>
+    <li>Make a <code>Ground Shots</code> group for the surface that <em>excludes</em> what isn't ground: tops of walls, utility rims set high, tree trunks, overhead shots.</li>
+  </ul>
+
+  <h2>5. Linework codes: get them right in the field</h2>
+  <p>The linework code set turns field codes into figures. The defaults use codes like <code>B</code> (begin), <code>E</code> (end), <code>CLO</code> (close) and curve codes. Whatever your set uses, print it on a card for the crew. Cleaning up linework in the office costs far more than coding it right on the shot.</p>
+  <ul>
+    <li>Match the code set to the collector's feature codes so there's one language, not two.</li>
+    <li>When a figure goes wrong, fix the codes in the survey database and re-process linework. Don't just grip-edit the polyline.</li>
+  </ul>
+
+  <h2>6. The survey database is the source of truth</h2>
+  <p>Points and figures in the drawing are copies of what's in the survey database. Edit them in the drawing and the next re-import or "insert into drawing" can overwrite your changes. Make fixes in the database, or deliberately break the link (for example by exploding figures into a separate drawing) once you're done with them.</p>
+
+  <h2>7. A quick checklist before you build the surface</h2>
+  <ol>
+    <li>Every figure has a style and a layer (none on layer 0).</li>
+    <li>Only true breaklines are flagged.</li>
+    <li>The surface uses the <code>Ground Shots</code> point group, not <code>_All Points</code>.</li>
+    <li>Turn on the surface's crossing-breakline check and fix the hits.</li>
+    <li>Look at the triangles along the edge. Long, skinny ones mean you need a boundary.</li>
+  </ol>
+</article>
+  <div class="more">
+    <h2>More field notes</h2>
+    <a href="coordinate-systems.html">Coordinate systems without the headache →</a> <a href="old-surveys.html">How they surveyed it back then →</a>
+  </div>
+  <footer>© <span id="yr"></span> jollytiki.com · General information, not legal or professional advice. Check your state's rules and your own work.</footer>
+</div>
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+</body>
+</html>

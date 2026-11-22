@@ -90,7 +90,11 @@
 
   .notes { list-style: none; display: grid; gap: .6rem; }
   .notes li { padding: .9rem 1.1rem; border-left: 3px solid var(--torch); background: rgba(18,54,59,.6); border-radius: 0 8px 8px 0; color: var(--muted); }
+  .notes li a { display: block; padding: .9rem 1.1rem; color: inherit; text-decoration: none; }
+  .notes li:has(a) { padding: 0; transition: transform .15s, border-color .15s, background .15s; }
+  .notes li:has(a):hover { transform: translateX(3px); background: rgba(18,54,59,.95); border-left-color: var(--flame); }
   .notes li strong { color: var(--sand); display: block; }
+  .notes li a:hover strong { color: var(--flame); }
 
   .contact { text-align: center; padding: 1.5rem 0 3rem; }
   .email-btn { display: inline-flex; align-items: center; gap: .55rem; padding: .8rem 1.5rem; font-weight: 700; font-size: 1.05rem;
@@ -167,12 +171,12 @@
         <h3>Area by Coordinates</h3>
         <p>Paste a list of N/E points and get square feet and acres.</p>
       </a>
-      <div class="card dim">
-        <span class="tag soon">Soon</span>
+      <a class="card" href="angle.html">
+        <span class="tag live">Live</span>
         <span class="icon">° ′ ″</span>
         <h3>Angle Converter</h3>
         <p>Degrees-minutes-seconds, decimal degrees and quadrant bearings.</p>
-      </div>
+      </a>
     </div>
   </section>
 
@@ -205,9 +209,9 @@
     <h2>Field Notes</h2>
     <p class="sub">Write-ups on the stuff that's easier to learn from someone who's already been burned by it.</p>
     <ul class="notes">
-      <li><strong>Coming soon: Civil 3D survey figure tips</strong>Keeping figures, point groups and surfaces from turning into a mess.</li>
-      <li><strong>Coming soon: Coordinate systems without the headache</strong>State Plane, grid vs. ground and the scale factor in plain English.</li>
-      <li><strong>Coming soon: How they surveyed it back then</strong>Chains, compasses and the old plats we still retrace today.</li>
+      <li><a href="notes/civil3d-survey-figures.html"><strong>Civil 3D survey figure tips →</strong>Keeping figures, point groups and surfaces from turning into a mess.</a></li>
+      <li><a href="notes/coordinate-systems.html"><strong>Coordinate systems without the headache →</strong>State Plane, grid vs. ground and the scale factor in plain English.</a></li>
+      <li><a href="notes/old-surveys.html"><strong>How they surveyed it back then →</strong>Chains, compasses and the old plats we still retrace today.</a></li>
     </ul>
   </section>
 

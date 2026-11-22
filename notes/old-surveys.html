@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How They Surveyed It Back Then | Jolly Tiki</title>
+<meta name="description" content="Gunter's chains, magnetic compasses, the PLSS and metes and bounds: what old surveys used and how to retrace them today.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e; --deep: #071a1d; --panel: #12363b; --line: #1f4b51;
+    --sand: #f4e3c1; --muted: #a9bfb9; --torch: #ff8a3d; --flame: #ffc94a;
+    --hibiscus: #e8475c; --leaf: #2f8f6b; --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #071a1d; }
+  body { font-family: "Karla", system-ui, sans-serif; color: var(--sand); line-height: 1.65;
+    background: radial-gradient(ellipse at 50% -10%, #1d4f55, transparent 55%), linear-gradient(180deg, var(--night), var(--deep) 70%);
+    background-attachment: fixed; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(244,227,193,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,227,193,.035) 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .wrap { position: relative; max-width: 760px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; }
+  .brand { color: var(--flame); font-family: "Bungee", Impact, sans-serif; font-size: 1.2rem; text-decoration: none; }
+  header a.back { color: var(--muted); text-decoration: none; font-weight: 600; }
+  header a.back:hover { color: var(--flame); }
+
+  .eyebrow { font-family: "JetBrains Mono", monospace; font-size: .78rem; letter-spacing: .14em; color: var(--torch); text-transform: uppercase; margin-top: 1.5rem; }
+  h1 { font-family: "Bungee", Impact, sans-serif; color: var(--flame); font-size: clamp(1.8rem, 5vw, 2.5rem); line-height: 1.1;
+       text-shadow: 0 3px 0 var(--wood-dark); margin: .4rem 0 .8rem; }
+  .lede { font-size: 1.15rem; color: var(--sand); opacity: .92; margin-bottom: 1.5rem; }
+  article h2 { font-family: "Bungee", Impact, sans-serif; color: var(--sand); font-size: 1.2rem; letter-spacing: .02em; margin: 2.2rem 0 .6rem; }
+  article h3 { color: var(--flame); font-size: 1.05rem; margin: 1.4rem 0 .3rem; }
+  article p { margin-bottom: .9rem; color: var(--sand); opacity: .9; }
+  article ul, article ol { margin: 0 0 1rem 1.3rem; color: var(--sand); opacity: .9; }
+  article li { margin-bottom: .35rem; }
+  article strong { color: var(--flame); font-weight: 700; }
+  code { font-family: "JetBrains Mono", monospace; font-size: .88em; color: var(--sand); background: var(--deep); padding: .05rem .35rem; border-radius: 4px; }
+  .formula { font-family: "JetBrains Mono", monospace; background: var(--deep); border: 1px solid var(--line); border-radius: 10px;
+             padding: .9rem 1.1rem; margin: 0 0 1rem; color: var(--flame); overflow-x: auto; white-space: pre; line-height: 1.6; }
+  .callout { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--torch); border-radius: 0 10px 10px 0;
+             padding: .9rem 1.1rem; margin: 1.2rem 0; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .k { font-family: "JetBrains Mono", monospace; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--torch); display: block; margin-bottom: .3rem; }
+  .tablewrap { overflow-x: auto; margin: 0 0 1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td, th { padding: .45rem .5rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+  td.num { font-family: "JetBrains Mono", monospace; white-space: nowrap; }
+  .more { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+  .more h2 { font-family: "Bungee", Impact, sans-serif; font-size: 1rem; color: var(--sand); margin-bottom: .6rem; }
+  .more a { display: block; color: var(--muted); text-decoration: none; padding: .3rem 0; font-weight: 600; }
+  .more a:hover { color: var(--flame); }
+  footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/">Jolly Tiki</a>
+    <a class="back" href="/#notes">← Field Notes</a>
+  </header>
+<article>
+  <div class="eyebrow">Field Notes · History</div>
+  <h1>How they surveyed it back then</h1>
+  <p class="lede">Chains, compasses and the old plats we still retrace today.</p>
+
+  <p>When you retrace an old boundary, you're following someone who worked with a chain, a compass and whatever they could see. Knowing their tools tells you where their errors are likely to be, and that tells you where to look for the corner.</p>
+
+  <h2>The chain</h2>
+  <p>Gunter's chain, introduced in England in the 1620s, was the standard in America for over two centuries. It was 66 ft long and made of 100 links, each about 7.92 inches. It made the land math easy:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Unit</th><th>Equals</th></tr>
+    <tr><td>1 link</td><td class="num">0.66 ft (7.92 in)</td></tr>
+    <tr><td>1 rod / pole / perch</td><td class="num">25 links = 16.5 ft</td></tr>
+    <tr><td>1 chain</td><td class="num">100 links = 4 rods = 66 ft</td></tr>
+    <tr><td>1 mile</td><td class="num">80 chains</td></tr>
+    <tr><td>1 acre</td><td class="num">10 square chains</td></tr>
+  </table></div>
+  <p>A call of <code>12.50 ch</code> is 825 ft. Chains stretched with wear, links got bent, and crews on slopes didn't always hold it level, so old distances often run long or short in a consistent direction. That consistency helps: if one found course is 1% long, the others probably are too.</p>
+  <p>In areas with Spanish or Mexican land grants you'll see the <strong>vara</strong> instead, whose length varied by place. In Texas it's 33⅓ inches.</p>
+
+  <h2>The compass</h2>
+  <p>Most old bearings are <strong>magnetic</strong>. Magnetic north drifts over time (secular variation), so a line run in 1820 and the same line run in 1900 can have bearings a few degrees apart without anyone being wrong. Iron ore, fences and even the surveyor's own gear could also pull the needle (local attraction).</p>
+  <p>To compare an old bearing with today's, don't just look up the historical declination. Find two original monuments on the line, measure between them, and rotate the whole deed to fit. The ground tells you the rotation better than any chart.</p>
+  <p>From the 1830s, many US government surveys used <strong>Burt's solar compass</strong>, which found true north from the sun and wasn't affected by local attraction. Notes from those surveys are usually much better on bearing.</p>
+
+  <h2>Two ways of dividing land</h2>
+  <h3>Metes and bounds</h3>
+  <p>The original colonies and states like Texas and Kentucky describe land by its boundary: "beginning at a white oak, thence N 45° E 40 poles to a stone…" Calls refer to trees, stones, streams and adjoining owners. Parcels can be any shape, and gaps and overlaps between neighbors are common.</p>
+  <h3>The Public Land Survey System</h3>
+  <p>Starting with the Land Ordinance of 1785, most of the country west and north of the Ohio River was laid out on a grid:</p>
+  <ul>
+    <li><strong>Townships</strong> are 6 miles square, located from an initial point by township (north/south) and range (east/west).</li>
+    <li>Each township has <strong>36 sections</strong> of about 1 square mile (640 acres), numbered back and forth starting from the northeast corner.</li>
+    <li>Because meridians converge toward the pole, the grid can't stay square. <strong>Standard parallels</strong> (correction lines) every 24 miles restart the spacing, which is why section lines jog at them.</li>
+    <li>Errors were pushed into the north and west tiers of each township, so those sections are the ones that are irregular in size.</li>
+  </ul>
+
+  <h2>What they left behind</h2>
+  <p>Corners were marked with what was available: posts, stones, pits and mounds of earth, or a blaze on a nearby tree. In PLSS surveys, the deputy surveyor recorded <strong>bearing trees</strong> (witness trees) with their species, diameter, bearing and distance to the corner. A stump or a scarred tree that matches the notes can still prove a corner a century later.</p>
+
+  <h2>Retracement, not resurvey</h2>
+  <p>The job is to <strong>follow the footsteps of the original surveyor</strong>, not to re-measure the land "correctly." A few principles that hold in most places:</p>
+  <ul>
+    <li>Original monuments, where found and undisturbed, control over the measurements written down.</li>
+    <li>A corner is only <em>lost</em> when there's no evidence at all, not just because the post is gone. If witnesses, fences or testimony place it, it's <em>obliterated</em>, and you restore it from that evidence.</li>
+    <li>Truly lost PLSS corners are restored by <strong>proportionate measurement</strong> from found corners, following the BLM Manual of Surveying Instructions.</li>
+    <li>For deeds, courts usually rank calls: natural monuments, then artificial monuments, then adjoiners, then courses and distances, then area. Your state's case law has the final word.</li>
+  </ul>
+
+  <div class="callout"><span class="k">Before you go to the field</span><p>Pull the original field notes, not just the plat. GLO notes for PLSS states are online through the BLM. The notes tell you what the surveyor saw at each corner, and that's what you're looking for.</p></div>
+</article>
+  <div class="more">
+    <h2>More field notes</h2>
+    <a href="civil3d-survey-figures.html">Civil 3D survey figure tips →</a> <a href="coordinate-systems.html">Coordinate systems without the headache →</a>
+  </div>
+  <footer>© <span id="yr"></span> jollytiki.com · General information, not legal or professional advice. Check your state's rules and your own work.</footer>
+</div>
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+</body>
+</html>

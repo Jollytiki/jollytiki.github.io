@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coordinate Systems Without the Headache | Jolly Tiki</title>
+<meta name="description" content="State Plane coordinates, grid vs. ground distances and the combined scale factor explained in plain English, with a worked example.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e; --deep: #071a1d; --panel: #12363b; --line: #1f4b51;
+    --sand: #f4e3c1; --muted: #a9bfb9; --torch: #ff8a3d; --flame: #ffc94a;
+    --hibiscus: #e8475c; --leaf: #2f8f6b; --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #071a1d; }
+  body { font-family: "Karla", system-ui, sans-serif; color: var(--sand); line-height: 1.65;
+    background: radial-gradient(ellipse at 50% -10%, #1d4f55, transparent 55%), linear-gradient(180deg, var(--night), var(--deep) 70%);
+    background-attachment: fixed; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(244,227,193,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,227,193,.035) 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .wrap { position: relative; max-width: 760px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; }
+  .brand { color: var(--flame); font-family: "Bungee", Impact, sans-serif; font-size: 1.2rem; text-decoration: none; }
+  header a.back { color: var(--muted); text-decoration: none; font-weight: 600; }
+  header a.back:hover { color: var(--flame); }
+
+  .eyebrow { font-family: "JetBrains Mono", monospace; font-size: .78rem; letter-spacing: .14em; color: var(--torch); text-transform: uppercase; margin-top: 1.5rem; }
+  h1 { font-family: "Bungee", Impact, sans-serif; color: var(--flame); font-size: clamp(1.8rem, 5vw, 2.5rem); line-height: 1.1;
+       text-shadow: 0 3px 0 var(--wood-dark); margin: .4rem 0 .8rem; }
+  .lede { font-size: 1.15rem; color: var(--sand); opacity: .92; margin-bottom: 1.5rem; }
+  article h2 { font-family: "Bungee", Impact, sans-serif; color: var(--sand); font-size: 1.2rem; letter-spacing: .02em; margin: 2.2rem 0 .6rem; }
+  article h3 { color: var(--flame); font-size: 1.05rem; margin: 1.4rem 0 .3rem; }
+  article p { margin-bottom: .9rem; color: var(--sand); opacity: .9; }
+  article ul, article ol { margin: 0 0 1rem 1.3rem; color: var(--sand); opacity: .9; }
+  article li { margin-bottom: .35rem; }
+  article strong { color: var(--flame); font-weight: 700; }
+  code { font-family: "JetBrains Mono", monospace; font-size: .88em; color: var(--sand); background: var(--deep); padding: .05rem .35rem; border-radius: 4px; }
+  .formula { font-family: "JetBrains Mono", monospace; background: var(--deep); border: 1px solid var(--line); border-radius: 10px;
+             padding: .9rem 1.1rem; margin: 0 0 1rem; color: var(--flame); overflow-x: auto; white-space: pre; line-height: 1.6; }
+  .callout { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--torch); border-radius: 0 10px 10px 0;
+             padding: .9rem 1.1rem; margin: 1.2rem 0; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .k { font-family: "JetBrains Mono", monospace; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--torch); display: block; margin-bottom: .3rem; }
+  .tablewrap { overflow-x: auto; margin: 0 0 1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td, th { padding: .45rem .5rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+  td.num { font-family: "JetBrains Mono", monospace; white-space: nowrap; }
+  .more { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+  .more h2 { font-family: "Bungee", Impact, sans-serif; font-size: 1rem; color: var(--sand); margin-bottom: .6rem; }
+  .more a { display: block; color: var(--muted); text-decoration: none; padding: .3rem 0; font-weight: 600; }
+  .more a:hover { color: var(--flame); }
+  footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/">Jolly Tiki</a>
+    <a class="back" href="/#notes">← Field Notes</a>
+  </header>
+<article>
+  <div class="eyebrow">Field Notes · Geodesy</div>
+  <h1>Coordinate systems without the headache</h1>
+  <p class="lede">State Plane, grid vs. ground, and the combined scale factor in plain English.</p>
+
+  <p>State Plane coordinates take the curved earth and flatten it onto a map. Flattening always stretches or squeezes something. The whole job of a "scale factor" is to tell you how much, so a distance on the map matches a distance you'd tape on the ground.</p>
+
+  <h2>Grid vs. ground</h2>
+  <p>A <strong>grid distance</strong> is measured on the flat State Plane map. A <strong>ground distance</strong> is what you actually measure with a total station or tape at the site's elevation. They're almost never the same. The gap depends on two things:</p>
+  <ol>
+    <li><strong>Where you are in the zone.</strong> The projection is only exact along one or two lines. Away from them, the map is slightly too big or too small. That's the <em>grid scale factor</em>, <code>k</code>.</li>
+    <li><strong>How high you are.</strong> The map is built at the ellipsoid, roughly sea level. Up a mountain, the ground is farther from the earth's center, so real distances are a bit longer than at sea level. That's the <em>elevation factor</em>.</li>
+  </ol>
+
+  <h2>The formulas</h2>
+  <div class="formula">Elevation factor  EF = R / (R + h)
+Combined factor   CF = k × EF
+
+Grid distance   = Ground distance × CF
+Ground distance = Grid distance ÷ CF
+Ground area     = Grid area ÷ CF²</div>
+  <p><code>R</code> is the earth's mean radius, about 20,906,000 ft. <code>h</code> is the <em>ellipsoid</em> height, which is your orthometric elevation plus the geoid height. In much of the US the geoid height is negative, so <code>h</code> is a bit lower than the elevation on your plans.</p>
+
+  <h3>Worked example</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Value</th><th>Number</th></tr>
+    <tr><td>Grid scale factor, k</td><td class="num">0.999920</td></tr>
+    <tr><td>Site elevation</td><td class="num">1,500 ft</td></tr>
+    <tr><td>Geoid height</td><td class="num">−100 ft</td></tr>
+    <tr><td>Ellipsoid height, h</td><td class="num">1,400 ft</td></tr>
+    <tr><td>Elevation factor, 20,906,000 ÷ 20,907,400</td><td class="num">0.999933</td></tr>
+    <tr><td>Combined factor, 0.999920 × 0.999933</td><td class="num">0.999853</td></tr>
+  </table></div>
+  <p>A 1,000.00 ft ground distance is 999.85 ft on the grid. That's 0.15 ft per 1,000 ft, about 1 part in 6,800. That's plenty to bust a closure if you mix grid and ground distances in the same traverse.</p>
+
+  <h2>Where people get burned</h2>
+  <h3>Mixing grid and ground</h3>
+  <p>The classic mistake: GPS control in State Plane grid, total station traverse in ground, all in one drawing. Pick one. Then <strong>say which on the plat</strong>, along with the combined factor you used.</p>
+
+  <h3>"Ground coordinates" that look like State Plane</h3>
+  <p>Some projects scale State Plane up to ground and keep the big numbers. Now there are two sets of coordinates a few feet apart that look identical. If you do this, scale about a stated base point (not 0,0), change the numbers enough that nobody can mistake them (subtract a round value), and document the factor and base point.</p>
+
+  <h3>US survey feet vs. international feet</h3>
+  <p>A US survey foot is <code>1200/3937 m</code>. An international foot is exactly <code>0.3048 m</code>. They differ by 2 parts per million, which sounds like nothing until it hits a northing of 2,000,000 ft: that's about <strong>4 ft</strong>. NIST and NGS retired the US survey foot at the end of 2022, but plenty of older data and state laws still use it. Always check which one a file is in before you combine it with anything.</p>
+
+  <h3>Grid north isn't true north</h3>
+  <p>Grid north and true (geodetic) north differ by the <em>convergence angle</em>, which grows as you move east or west of the zone's central meridian. A bearing from State Plane coordinates is a grid bearing. If the deed is on true or magnetic bearings, rotate on purpose and say so in the basis of bearings.</p>
+
+  <h2>What's changing</h2>
+  <p>NGS is replacing NAD 83 with new reference frames and a new State Plane Coordinate System (SPCS2022). Many zones are being redesigned to have much less distortion, and some states are adopting low-distortion projections where grid and ground are within a few parts per million over a whole county. Check the NGS site for the status in your state before you start a long project.</p>
+
+  <div class="callout"><span class="k">On every plat</span><p>Datum and epoch, zone, units (which foot), grid or ground, and the combined factor if you scaled anything. Five lines of text save the next surveyor a week.</p></div>
+</article>
+  <div class="more">
+    <h2>More field notes</h2>
+    <a href="civil3d-survey-figures.html">Civil 3D survey figure tips →</a> <a href="old-surveys.html">How they surveyed it back then →</a>
+  </div>
+  <footer>© <span id="yr"></span> jollytiki.com · General information, not legal or professional advice. Check your state's rules and your own work.</footer>
+</div>
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+</body>
+</html>
