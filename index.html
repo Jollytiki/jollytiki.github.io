@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jolly Tiki — Coming Soon</title>
+<meta name="description" content="Jolly Tiki. Something's brewing. Coming soon.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e;
+    --deep: #071a1d;
+    --sand: #f4e3c1;
+    --torch: #ff8a3d;
+    --flame: #ffc94a;
+    --hibiscus: #e8475c;
+    --leaf: #2f8f6b;
+    --wood: #6b3f22;
+    --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Karla", system-ui, sans-serif;
+    color: var(--sand);
+    background:
+      radial-gradient(ellipse at 50% 110%, rgba(255,138,61,.35), transparent 55%),
+      radial-gradient(ellipse at 50% -20%, #1d4f55, transparent 60%),
+      linear-gradient(180deg, var(--night), var(--deep));
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+    text-align: center;
+    padding: 2rem 1rem 6rem;
+    position: relative;
+  }
+  .stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .star {
+    position: absolute; width: 2px; height: 2px; border-radius: 50%;
+    background: #fff; opacity: .6; animation: twinkle 3s ease-in-out infinite;
+  }
+  @keyframes twinkle { 50% { opacity: .1; } }
+
+  .palm { position: fixed; bottom: -10px; width: 260px; z-index: 1; opacity: .9; pointer-events: none; }
+  .palm.left { left: -40px; }
+  .palm.right { right: -40px; transform: scaleX(-1); }
+
+  main { position: relative; z-index: 2; max-width: 640px; }
+
+  .totem { width: 170px; margin: 0 auto 1.25rem; display: block; filter: drop-shadow(0 0 24px rgba(255,138,61,.45)); }
+  .totem .eye { animation: blink 6s infinite; transform-origin: center; transform-box: fill-box; }
+  @keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+
+  h1 {
+    font-family: "Bungee", Impact, sans-serif;
+    font-size: clamp(2.6rem, 9vw, 4.8rem);
+    line-height: 1;
+    letter-spacing: .02em;
+    color: var(--flame);
+    text-shadow: 0 3px 0 var(--wood-dark), 0 0 30px rgba(255,138,61,.55);
+  }
+  .tag {
+    margin-top: 1rem;
+    font-size: clamp(1.05rem, 3.2vw, 1.3rem);
+    opacity: .9;
+  }
+  .sign {
+    display: inline-block;
+    margin-top: 2rem;
+    padding: .7rem 1.6rem;
+    font-family: "Bungee", Impact, sans-serif;
+    font-size: 1rem;
+    letter-spacing: .12em;
+    color: var(--sand);
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.12) 0 3px, transparent 3px 14px),
+      linear-gradient(180deg, var(--wood), var(--wood-dark));
+    border-radius: 6px;
+    box-shadow: 0 6px 0 #2a1608, 0 10px 25px rgba(0,0,0,.4);
+    transform: rotate(-2deg);
+  }
+  .torches { display: flex; justify-content: center; gap: 4.5rem; margin-top: 2.5rem; }
+  .torch { width: 22px; height: 70px; position: relative; }
+  .torch::before {
+    content: ""; position: absolute; bottom: 0; left: 8px; width: 6px; height: 48px;
+    background: var(--wood); border-radius: 2px;
+  }
+  .torch::after {
+    content: ""; position: absolute; top: 0; left: 1px; width: 20px; height: 26px;
+    background: radial-gradient(circle at 50% 70%, var(--flame), var(--torch) 55%, transparent 72%);
+    border-radius: 50% 50% 45% 45%;
+    animation: flicker .18s infinite alternate;
+  }
+  @keyframes flicker { from { transform: scale(1) rotate(-2deg); opacity: .9; } to { transform: scale(1.12, 1.2) rotate(3deg); opacity: 1; } }
+
+  footer {
+    position: fixed; bottom: 1rem; left: 0; right: 0; z-index: 2;
+    font-size: .85rem; opacity: .55;
+  }
+  @media (max-width: 600px) { .palm { width: 170px; } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+
+  <svg class="palm left" viewBox="0 0 200 300" aria-hidden="true">
+    <path d="M100 300 C 96 220, 92 160, 104 90" stroke="#3a2412" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <g fill="#123b34">
+      <path d="M104 90 C 70 60, 30 60, 0 90 C 40 70, 70 75, 104 92Z"/>
+      <path d="M104 90 C 80 40, 50 20, 20 20 C 55 35, 80 55, 104 92Z"/>
+      <path d="M104 90 C 120 45, 150 25, 185 30 C 150 45, 125 65, 104 92Z"/>
+      <path d="M104 90 C 140 70, 175 75, 200 110 C 165 85, 135 85, 104 92Z"/>
+      <path d="M104 90 C 100 50, 105 20, 120 0 C 115 30, 112 60, 104 92Z"/>
+    </g>
+  </svg>
+  <svg class="palm right" viewBox="0 0 200 300" aria-hidden="true">
+    <path d="M100 300 C 96 220, 92 160, 104 90" stroke="#3a2412" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <g fill="#123b34">
+      <path d="M104 90 C 70 60, 30 60, 0 90 C 40 70, 70 75, 104 92Z"/>
+      <path d="M104 90 C 80 40, 50 20, 20 20 C 55 35, 80 55, 104 92Z"/>
+      <path d="M104 90 C 120 45, 150 25, 185 30 C 150 45, 125 65, 104 92Z"/>
+      <path d="M104 90 C 140 70, 175 75, 200 110 C 165 85, 135 85, 104 92Z"/>
+    </g>
+  </svg>
+
+  <main>
+    <!-- Original tiki totem -->
+    <svg class="totem" viewBox="0 0 160 220" role="img" aria-label="Smiling tiki totem">
+      <defs>
+        <linearGradient id="wood" x1="0" x2="1">
+          <stop offset="0" stop-color="#5a3219"/>
+          <stop offset=".5" stop-color="#8a5530"/>
+          <stop offset="1" stop-color="#5a3219"/>
+        </linearGradient>
+      </defs>
+      <!-- leaf crown -->
+      <path d="M80 30 L60 0 L72 28 L45 8 L64 34 Z" fill="var(--leaf)"/>
+      <path d="M80 30 L100 0 L88 28 L115 8 L96 34 Z" fill="var(--leaf)"/>
+      <path d="M80 30 L80 -2 L86 30 Z" fill="#3fae84"/>
+      <!-- head -->
+      <rect x="22" y="28" width="116" height="184" rx="22" fill="url(#wood)" stroke="#3a1f0c" stroke-width="4"/>
+      <!-- brow -->
+      <path d="M32 70 Q80 48 128 70" stroke="#3a1f0c" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <!-- eyes -->
+      <g class="eye"><ellipse cx="56" cy="88" rx="16" ry="13" fill="var(--sand)"/><circle cx="58" cy="89" r="6" fill="#1a0d04"/></g>
+      <g class="eye"><ellipse cx="104" cy="88" rx="16" ry="13" fill="var(--sand)"/><circle cx="102" cy="89" r="6" fill="#1a0d04"/></g>
+      <!-- nose -->
+      <path d="M80 98 L68 130 Q80 138 92 130 Z" fill="#6a3c1d" stroke="#3a1f0c" stroke-width="3"/>
+      <!-- big jolly grin -->
+      <path d="M40 146 Q80 196 120 146 Z" fill="#2a1208" stroke="#3a1f0c" stroke-width="4"/>
+      <g fill="var(--sand)">
+        <rect x="52" y="148" width="12" height="11" rx="2"/>
+        <rect x="68" y="148" width="12" height="13" rx="2"/>
+        <rect x="84" y="148" width="12" height="13" rx="2"/>
+        <rect x="100" y="148" width="10" height="10" rx="2"/>
+      </g>
+      <path d="M62 176 Q80 184 98 176" stroke="var(--hibiscus)" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <!-- cheek carvings -->
+      <path d="M30 120 l10 6 l-10 6" stroke="#3a1f0c" stroke-width="3" fill="none"/>
+      <path d="M130 120 l-10 6 l10 6" stroke="#3a1f0c" stroke-width="3" fill="none"/>
+      <!-- hibiscus -->
+      <g transform="translate(124 52)">
+        <circle r="7" cx="0" cy="-8" fill="var(--hibiscus)"/>
+        <circle r="7" cx="8" cy="-2" fill="var(--hibiscus)"/>
+        <circle r="7" cx="5" cy="8" fill="var(--hibiscus)"/>
+        <circle r="7" cx="-5" cy="8" fill="var(--hibiscus)"/>
+        <circle r="7" cx="-8" cy="-2" fill="var(--hibiscus)"/>
+        <circle r="3.5" fill="var(--flame)"/>
+      </g>
+    </svg>
+
+    <h1>Jolly Tiki</h1>
+    <p class="tag">Something's brewing under the palms.</p>
+    <div class="sign">COMING SOON</div>
+
+    <div class="torches" aria-hidden="true"><div class="torch"></div><div class="torch"></div></div>
+  </main>
+
+  <footer>© <span id="yr"></span> jollytiki.com</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  const s = document.getElementById('stars');
+  for (let i = 0; i < 70; i++) {
+    const d = document.createElement('div');
+    d.className = 'star';
+    d.style.left = Math.random() * 100 + '%';
+    d.style.top = Math.random() * 60 + '%';
+    d.style.animationDelay = (Math.random() * 3) + 's';
+    s.appendChild(d);
+  }
+</script>
+</body>
+</html>
