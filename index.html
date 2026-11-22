@@ -92,7 +92,7 @@
   .notes li { padding: .9rem 1.1rem; border-left: 3px solid var(--torch); background: rgba(18,54,59,.6); border-radius: 0 8px 8px 0; color: var(--muted); }
   .notes li strong { color: var(--sand); display: block; }
 
-  .contact { text-align: center; padding: 3rem 0 4rem; }
+  .contact { text-align: center; padding: 1.5rem 0 3rem; }
   .email-btn { display: inline-flex; align-items: center; gap: .55rem; padding: .8rem 1.5rem; font-weight: 700; font-size: 1.05rem;
     color: var(--deep); text-decoration: none; background: linear-gradient(180deg, var(--flame), var(--torch)); border-radius: 999px;
     box-shadow: 0 4px 0 #b35a1e, 0 8px 22px rgba(255,138,61,.3); transition: transform .12s; }
@@ -212,11 +212,9 @@
   </section>
 
   <section class="contact" id="contact">
-    <h2>Got a question or a tool idea?</h2>
-    <p class="sub">Drop a line. Suggestions for new calculators are always welcome.</p>
     <a class="email-btn" id="email-btn" href="#">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
-      Email Crowley
+      <span id="email-text">Email</span>
     </a>
   </section>
 </div>
@@ -232,6 +230,7 @@
   const btn = document.getElementById('email-btn');
   btn.href = 'mailto:' + addr;
   btn.title = addr;
+  document.getElementById('email-text').textContent = addr;
 </script>
 </body>
 </html>
