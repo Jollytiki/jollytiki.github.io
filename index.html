@@ -71,6 +71,23 @@
   .tag.soon { background: transparent; border: 1px solid var(--line); color: var(--muted); }
   .card.dim { opacity: .7; }
 
+  .project { display: grid; grid-template-columns: 1fr auto; gap: 1.5rem; align-items: center; padding: 1.5rem;
+             background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--flame); border-radius: 12px; }
+  .project h3 { font-family: "Bungee", Impact, sans-serif; font-size: 1.35rem; color: var(--flame); margin-bottom: .4rem; }
+  .project p { color: var(--sand); opacity: .9; margin-bottom: .5rem; }
+  .project ul { color: var(--muted); margin: .4rem 0 .8rem 1.1rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .chip { font-family: "JetBrains Mono", monospace; font-size: .72rem; padding: .15rem .55rem; border-radius: 999px;
+          border: 1px solid var(--line); color: var(--muted); }
+  .proj-actions { display: flex; flex-direction: column; gap: .5rem; min-width: 190px; }
+  .btn { display: block; text-align: center; padding: .55rem 1rem; border-radius: 999px; font-weight: 700; text-decoration: none; font-size: .92rem; }
+  .btn.solid { background: linear-gradient(180deg, var(--flame), var(--torch)); color: var(--deep); box-shadow: 0 3px 0 #b35a1e; }
+  .btn.ghost { border: 1px solid var(--line); color: var(--sand); }
+  .btn:hover { transform: translateY(-1px); }
+  .btn.ghost:hover { border-color: var(--torch); color: var(--flame); }
+  .dl-label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; text-align: center; }
+  @media (max-width: 760px) { .project { grid-template-columns: 1fr; } .proj-actions { min-width: 0; } }
+
   .notes { list-style: none; display: grid; gap: .6rem; }
   .notes li { padding: .9rem 1.1rem; border-left: 3px solid var(--torch); background: rgba(18,54,59,.6); border-radius: 0 8px 8px 0; color: var(--muted); }
   .notes li strong { color: var(--sand); display: block; }
@@ -107,7 +124,7 @@
       </svg>
       Jolly Tiki
     </a>
-    <nav><a href="#tools">Tools</a><a href="#notes">Field Notes</a><a href="#contact">Contact</a></nav>
+    <nav><a href="#tools">Tools</a><a href="#projects">Projects</a><a href="#notes">Field Notes</a><a href="#contact">Contact</a></nav>
   </header>
 
   <div class="hero">
@@ -161,6 +178,31 @@
         <span class="icon">° ′ ″</span>
         <h3>Angle Converter</h3>
         <p>Degrees-minutes-seconds, decimal degrees and quadrant bearings.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <h2>Projects</h2>
+    <p class="sub">Bigger tools built on the side. Free and open source on GitHub.</p>
+    <div class="project">
+      <div>
+        <h3>MapCheck</h3>
+        <p>Type in a deed's courses and MapCheck plots the figure and tells you whether it closes.</p>
+        <ul>
+          <li>Error of closure, precision ratio and enclosed area</li>
+          <li>Quadrant bearings, distances and circular curves</li>
+          <li>Opens .MAP files from the original 1992 QuickBASIC program</li>
+          <li>Runs on your own computer. No account, no upload, nothing leaves your machine</li>
+        </ul>
+        <div class="chips"><span class="chip">Rust</span><span class="chip">WebAssembly</span><span class="chip">macOS · Windows · Linux</span><span class="chip">ISC license</span></div>
+      </div>
+      <div class="proj-actions">
+        <div class="dl-label">Download latest</div>
+        <a class="btn solid" href="https://github.com/jollytiki/MapCheck/releases/latest/download/MapCheck-macOS-universal.zip">macOS</a>
+        <a class="btn solid" href="https://github.com/jollytiki/MapCheck/releases/latest/download/mapcheck-windows-x86_64.zip">Windows</a>
+        <a class="btn solid" href="https://github.com/jollytiki/MapCheck/releases/latest/download/mapcheck-linux-x86_64.tar.gz">Linux</a>
+        <a class="btn ghost" href="https://github.com/jollytiki/MapCheck">View on GitHub →</a>
       </div>
     </div>
   </section>
