@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inverse Calculator — Bearing &amp; Distance | Jolly Tiki</title>
+<meta name="description" content="Free survey inverse calculator: bearing, azimuth and distance between two northing/easting coordinates.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e; --deep: #071a1d; --panel: #12363b; --line: #1f4b51;
+    --sand: #f4e3c1; --muted: #a9bfb9; --torch: #ff8a3d; --flame: #ffc94a;
+    --hibiscus: #e8475c; --leaf: #2f8f6b; --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Karla", system-ui, sans-serif; color: var(--sand); line-height: 1.5;
+    background: radial-gradient(ellipse at 50% -10%, #1d4f55, transparent 55%), linear-gradient(180deg, var(--night), var(--deep) 70%);
+    background-attachment: fixed; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(244,227,193,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,227,193,.035) 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .wrap { position: relative; max-width: 900px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; }
+  .brand { color: var(--flame); font-family: "Bungee", Impact, sans-serif; font-size: 1.2rem; text-decoration: none; }
+  header a.back { color: var(--muted); text-decoration: none; font-weight: 600; }
+  header a.back:hover { color: var(--flame); }
+
+  h1 { font-family: "Bungee", Impact, sans-serif; color: var(--flame); font-size: clamp(1.8rem, 5vw, 2.6rem);
+       text-shadow: 0 3px 0 var(--wood-dark); margin: 1rem 0 .3rem; }
+  .lede { color: var(--muted); margin-bottom: 1.5rem; }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  .points { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .pt h2 { font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; color: var(--torch); margin-bottom: .6rem; font-family: "JetBrains Mono", monospace; }
+  label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: .2rem; }
+  input, select { width: 100%; padding: .6rem .7rem; margin-bottom: .7rem; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--deep); color: var(--sand); font-family: "JetBrains Mono", monospace; font-size: 1rem; }
+  input:focus, select:focus { outline: 2px solid var(--torch); outline-offset: 1px; }
+  .opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: .4rem; padding-top: 1rem; border-top: 1px dashed var(--line); }
+  .actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .2rem; }
+  button { cursor: pointer; padding: .55rem 1rem; border-radius: 999px; border: 1px solid var(--line); background: transparent;
+    color: var(--sand); font-family: inherit; font-weight: 600; }
+  button:hover { border-color: var(--torch); color: var(--flame); }
+
+  .results { margin-top: 1.25rem; display: grid; grid-template-columns: 1.2fr 1fr; gap: 1rem; }
+  .big { background: var(--deep); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  .big .k { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+  .big .v { font-family: "JetBrains Mono", monospace; font-weight: 700; color: var(--flame); font-size: clamp(1.4rem, 4vw, 2rem); margin-bottom: .8rem; word-break: break-word; }
+  .big .v:last-child { margin-bottom: 0; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td { padding: .45rem .2rem; border-bottom: 1px solid var(--line); }
+  td:first-child { color: var(--muted); }
+  td:last-child { text-align: right; font-family: "JetBrains Mono", monospace; }
+  .err { color: var(--hibiscus); font-weight: 600; margin-top: 1rem; display: none; }
+  .copied { color: var(--leaf); font-weight: 600; align-self: center; opacity: 0; transition: opacity .2s; }
+
+  #sketch { width: 100%; height: auto; background: var(--deep); border: 1px solid var(--line); border-radius: 12px; margin-top: 1rem; }
+  #sketch text { font-family: "JetBrains Mono", monospace; font-size: 11px; fill: var(--muted); }
+
+  .how { margin-top: 2rem; color: var(--muted); }
+  .how h2 { font-family: "Bungee", Impact, sans-serif; color: var(--sand); font-size: 1.15rem; margin-bottom: .5rem; }
+  .how p { margin-bottom: .6rem; }
+  .how code { font-family: "JetBrains Mono", monospace; color: var(--sand); background: var(--deep); padding: .05rem .35rem; border-radius: 4px; }
+  footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+
+  @media (max-width: 680px) {
+    .points, .results { grid-template-columns: 1fr; }
+    .opts { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/">Jolly Tiki</a>
+    <a class="back" href="/">← All tools</a>
+  </header>
+
+  <h1>Inverse</h1>
+  <p class="lede">Enter two coordinates and get the bearing, azimuth and distance between them. The numbers update as you type.</p>
+
+  <div class="panel">
+    <div class="points">
+      <div class="pt">
+        <h2>From · Point <span id="lbl1">1</span></h2>
+        <label for="id1">Point ID (optional)</label>
+        <input id="id1" placeholder="1">
+        <label for="n1">Northing</label>
+        <input id="n1" inputmode="decimal" value="5000.00">
+        <label for="e1">Easting</label>
+        <input id="e1" inputmode="decimal" value="5000.00">
+      </div>
+      <div class="pt">
+        <h2>To · Point <span id="lbl2">2</span></h2>
+        <label for="id2">Point ID (optional)</label>
+        <input id="id2" placeholder="2">
+        <label for="n2">Northing</label>
+        <input id="n2" inputmode="decimal" value="5245.67">
+        <label for="e2">Easting</label>
+        <input id="e2" inputmode="decimal" value="5132.89">
+      </div>
+    </div>
+    <div class="opts">
+      <div>
+        <label for="units">Units</label>
+        <select id="units">
+          <option value="US ft">US survey feet</option>
+          <option value="ft">International feet</option>
+          <option value="m">Meters</option>
+        </select>
+      </div>
+      <div>
+        <label for="dp">Distance decimals</label>
+        <select id="dp"><option>2</option><option selected>3</option><option>4</option></select>
+      </div>
+      <div>
+        <label for="sp">Seconds precision</label>
+        <select id="sp"><option value="0" selected>Whole seconds</option><option value="1">Tenths</option><option value="2">Hundredths</option></select>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="swap" type="button">⇅ Swap points</button>
+      <button id="copy" type="button">Copy results</button>
+      <button id="clear" type="button">Clear</button>
+      <span class="copied" id="copied">Copied!</span>
+    </div>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div class="results" id="results">
+    <div class="big">
+      <div class="k">Bearing</div><div class="v" id="r-bearing">—</div>
+      <div class="k">Distance</div><div class="v" id="r-dist">—</div>
+    </div>
+    <div class="big">
+      <table>
+        <tr><td>Azimuth (from N)</td><td id="r-az">—</td></tr>
+        <tr><td>Azimuth (decimal °)</td><td id="r-azd">—</td></tr>
+        <tr><td>Back bearing</td><td id="r-bb">—</td></tr>
+        <tr><td>Back azimuth</td><td id="r-baz">—</td></tr>
+        <tr><td>ΔN (latitude)</td><td id="r-dn">—</td></tr>
+        <tr><td>ΔE (departure)</td><td id="r-de">—</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <svg id="sketch" viewBox="0 0 600 260" role="img" aria-label="Sketch of the line between the two points"></svg>
+
+  <div class="how">
+    <h2>How it works</h2>
+    <p>It's the standard inverse: <code>ΔN = N₂ − N₁</code>, <code>ΔE = E₂ − E₁</code>, distance <code>= √(ΔN² + ΔE²)</code>, and azimuth <code>= atan2(ΔE, ΔN)</code>, measured clockwise from north. The azimuth is then turned into a quadrant bearing.</p>
+    <p>The distance is a plane (grid) distance in whatever units your coordinates are in. If you're working in State Plane and need a ground distance, divide by your combined scale factor.</p>
+    <p>Got two points in the same spot? You'll get a zero distance and no bearing, because a line with no length has no direction.</p>
+  </div>
+
+  <footer>© <span id="yr"></span> jollytiki.com · Provided as-is. Check your work before it goes on a plat.</footer>
+</div>
+
+<script>
+// ===== MATH START =====
+function toNum(s) {
+  if (typeof s === 'number') return s;
+  const t = String(s).replace(/,/g, '').trim();
+  if (t === '' || !/^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(t)) return NaN;
+  return parseFloat(t);
+}
+// Decimal degrees -> D°MM'SS" with carry-safe rounding
+function dms(deg, secDp) {
+  secDp = secDp || 0;
+  const f = Math.pow(10, secDp);
+  let totalSec = Math.round(deg * 3600 * f) / f;
+  let d = Math.floor(totalSec / 3600 + 1e-12);
+  let rem = totalSec - d * 3600;
+  let m = Math.floor(rem / 60 + 1e-12);
+  let s = rem - m * 60;
+  if (s < 0) s = 0;
+  const sStr = s.toFixed(secDp);
+  const sPad = secDp ? sStr.padStart(3 + secDp, '0') : sStr.padStart(2, '0');
+  return d + '°' + String(m).padStart(2, '0') + "'" + sPad + '"';
+}
+function normAz(a) { a = a % 360; if (a < 0) a += 360; return a; }
+// Round an azimuth to display precision (in seconds) and keep it in [0, 360)
+function roundAz(az, secDp) {
+  const f = Math.pow(10, secDp || 0);
+  return normAz(Math.round(az * 3600 * f) / (3600 * f));
+}
+function azDms(az, secDp) { return dms(roundAz(az, secDp), secDp); }
+function bearingFromAz(az, secDp) {
+  // Round first, so 89°59'59.9" displays as N 90°00'00" E instead of landing in the wrong quadrant
+  az = roundAz(az, secDp);
+  let ns, ew, ang;
+  if (az <= 90)       { ns = 'N'; ew = 'E'; ang = az; }
+  else if (az <= 180) { ns = 'S'; ew = 'E'; ang = 180 - az; }
+  else if (az <= 270) { ns = 'S'; ew = 'W'; ang = az - 180; }
+  else                { ns = 'N'; ew = 'W'; ang = 360 - az; }
+  return ns + ' ' + dms(ang, secDp) + ' ' + ew;
+}
+function inverse(n1, e1, n2, e2) {
+  const dN = n2 - n1, dE = e2 - e1;
+  const dist = Math.hypot(dN, dE);
+  if (dist === 0) return { dN, dE, dist, az: null };
+  const az = normAz(Math.atan2(dE, dN) * 180 / Math.PI);
+  return { dN, dE, dist, az, backAz: normAz(az + 180) };
+}
+// ===== MATH END =====
+
+if (typeof document !== 'undefined') {
+  const $ = id => document.getElementById(id);
+  const fields = ['n1','e1','n2','e2','id1','id2','units','dp','sp'];
+  let last = null;
+
+  function fmtSigned(x, dp) { return (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(dp); }
+
+  function calc() {
+    const n1 = toNum($('n1').value), e1 = toNum($('e1').value), n2 = toNum($('n2').value), e2 = toNum($('e2').value);
+    const units = $('units').value, dp = +$('dp').value, sp = +$('sp').value;
+    $('lbl1').textContent = $('id1').value || '1';
+    $('lbl2').textContent = $('id2').value || '2';
+    const err = $('err');
+    const set = (id, v) => { $(id).textContent = v; };
+    if ([n1, e1, n2, e2].some(isNaN)) {
+      err.style.display = 'block';
+      err.textContent = 'Enter numbers for all four coordinates (commas are fine).';
+      ['r-bearing','r-dist','r-az','r-azd','r-bb','r-baz','r-dn','r-de'].forEach(i => set(i, '—'));
+      $('sketch').innerHTML = ''; last = null; return;
+    }
+    err.style.display = 'none';
+    const r = inverse(n1, e1, n2, e2);
+    set('r-dist', r.dist.toFixed(dp) + ' ' + units);
+    set('r-dn', fmtSigned(r.dN, dp));
+    set('r-de', fmtSigned(r.dE, dp));
+    if (r.az === null) {
+      ['r-bearing','r-az','r-azd','r-bb','r-baz'].forEach(i => set(i, 'n/a'));
+      err.style.display = 'block';
+      err.textContent = 'Same point twice: zero distance, so there is no bearing.';
+      $('sketch').innerHTML = ''; last = null; return;
+    }
+    set('r-bearing', bearingFromAz(r.az, sp));
+    set('r-az', azDms(r.az, sp));
+    set('r-azd', r.az.toFixed(6) + '°');
+    set('r-bb', bearingFromAz(r.backAz, sp));
+    set('r-baz', azDms(r.backAz, sp));
+    last = { r, units, dp, sp, id1: $('lbl1').textContent, id2: $('lbl2').textContent };
+    draw(r, last);
+  }
+
+  function draw(r, o) {
+    const W = 600, H = 260, pad = 50;
+    const span = Math.max(Math.abs(r.dN), Math.abs(r.dE));
+    const s = (Math.min(W, H) / 2 - pad) / span;
+    const cx = W / 2, cy = H / 2;
+    const x1 = cx - r.dE * s / 2, y1 = cy + r.dN * s / 2;
+    const x2 = cx + r.dE * s / 2, y2 = cy - r.dN * s / 2;
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+    let ang = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+    if (ang > 90) ang -= 180; if (ang < -90) ang += 180;
+    $('sketch').innerHTML = `
+      <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#ffc94a" stroke-width="2.5"/>
+      <circle cx="${x1}" cy="${y1}" r="6" fill="#ff8a3d"/><circle cx="${x2}" cy="${y2}" r="6" fill="#ff8a3d"/>
+      <text x="${x1 + 10}" y="${y1 + 4}">${esc(o.id1)}</text><text x="${x2 + 10}" y="${y2 + 4}">${esc(o.id2)}</text>
+      <g transform="translate(${mx} ${my}) rotate(${ang})">
+        <text text-anchor="middle" y="-8" style="fill:#f4e3c1">${bearingFromAz(r.az, o.sp)}</text>
+        <text text-anchor="middle" y="16">${r.dist.toFixed(o.dp)} ${o.units}</text>
+      </g>
+      <g transform="translate(${W - 30} ${H - 22})"><path d="M0 -26 L7 0 L0 -6 L-7 0 Z" fill="#ffc94a"/><text x="-4" y="-30" style="fill:#ffc94a">N</text></g>`;
+  }
+  function esc(t) { return String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  fields.forEach(f => $(f).addEventListener('input', calc));
+  $('swap').onclick = () => {
+    [['n1','n2'],['e1','e2'],['id1','id2']].forEach(([a,b]) => { const t = $(a).value; $(a).value = $(b).value; $(b).value = t; });
+    calc();
+  };
+  $('clear').onclick = () => { ['n1','e1','n2','e2','id1','id2'].forEach(f => $(f).value = ''); calc(); $('n1').focus(); };
+  $('copy').onclick = async () => {
+    if (!last) return;
+    const r = last.r;
+    const txt = `Inverse ${last.id1} → ${last.id2}\nBearing: ${$('r-bearing').textContent}\nDistance: ${$('r-dist').textContent}\nAzimuth: ${$('r-az').textContent}\nΔN: ${$('r-dn').textContent}  ΔE: ${$('r-de').textContent}`;
+    try { await navigator.clipboard.writeText(txt); $('copied').style.opacity = 1; setTimeout(() => $('copied').style.opacity = 0, 1500); } catch (e) {}
+  };
+  $('yr').textContent = new Date().getFullYear();
+  calc();
+}
+</script>
+</body>
+</html>
