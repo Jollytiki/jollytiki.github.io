@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Area by Coordinates — Square Feet &amp; Acres | Jolly Tiki</title>
+<meta name="description" content="Free survey area calculator: paste a list of northing/easting points and get square feet, acres, perimeter and courses.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e; --deep: #071a1d; --panel: #12363b; --line: #1f4b51;
+    --sand: #f4e3c1; --muted: #a9bfb9; --torch: #ff8a3d; --flame: #ffc94a;
+    --hibiscus: #e8475c; --leaf: #2f8f6b; --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Karla", system-ui, sans-serif; color: var(--sand); line-height: 1.5;
+    background: radial-gradient(ellipse at 50% -10%, #1d4f55, transparent 55%), linear-gradient(180deg, var(--night), var(--deep) 70%);
+    background-attachment: fixed; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(244,227,193,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,227,193,.035) 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .wrap { position: relative; max-width: 960px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; }
+  .brand { color: var(--flame); font-family: "Bungee", Impact, sans-serif; font-size: 1.2rem; text-decoration: none; }
+  header a.back { color: var(--muted); text-decoration: none; font-weight: 600; }
+  header a.back:hover { color: var(--flame); }
+
+  h1 { font-family: "Bungee", Impact, sans-serif; color: var(--flame); font-size: clamp(1.8rem, 5vw, 2.6rem);
+       text-shadow: 0 3px 0 var(--wood-dark); margin: 1rem 0 .3rem; }
+  .lede { color: var(--muted); margin-bottom: 1.5rem; }
+
+  .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: .25rem; }
+  textarea, select { width: 100%; padding: .6rem .7rem; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--deep); color: var(--sand); font-family: "JetBrains Mono", monospace; font-size: .92rem; }
+  textarea { min-height: 260px; resize: vertical; line-height: 1.45; }
+  textarea:focus, select:focus { outline: 2px solid var(--torch); outline-offset: 1px; }
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-top: .9rem; }
+  .opts select { margin-bottom: 0; }
+  .actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1rem; }
+  button { cursor: pointer; padding: .55rem 1rem; border-radius: 999px; border: 1px solid var(--line); background: transparent;
+    color: var(--sand); font-family: inherit; font-weight: 600; }
+  button:hover { border-color: var(--torch); color: var(--flame); }
+  .copied { color: var(--leaf); font-weight: 600; align-self: center; opacity: 0; transition: opacity .2s; }
+  .hint { font-size: .82rem; color: var(--muted); margin-top: .5rem; }
+
+  .big { background: var(--deep); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  .big .k { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+  .big .v { font-family: "JetBrains Mono", monospace; font-weight: 700; color: var(--flame); font-size: clamp(1.4rem, 4vw, 2rem); margin-bottom: .8rem; word-break: break-word; }
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  td, th { padding: .4rem .3rem; border-bottom: 1px solid var(--line); text-align: left; }
+  th { color: var(--muted); font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; }
+  .stats td:first-child { color: var(--muted); }
+  .stats td:last-child, .courses td.num { text-align: right; font-family: "JetBrains Mono", monospace; }
+  .courses td { font-family: "JetBrains Mono", monospace; }
+  .courses-wrap { margin-top: 1rem; max-height: 340px; overflow: auto; }
+  .msgs { margin-top: .8rem; display: grid; gap: .4rem; }
+  .msg { font-size: .9rem; padding: .5rem .7rem; border-radius: 8px; }
+  .msg.warn { background: rgba(255,138,61,.12); border-left: 3px solid var(--torch); color: var(--sand); }
+  .msg.err { background: rgba(232,71,92,.14); border-left: 3px solid var(--hibiscus); color: var(--sand); }
+  .msg.ok { background: rgba(47,143,107,.16); border-left: 3px solid var(--leaf); color: var(--sand); }
+
+  #sketch { width: 100%; height: auto; background: var(--deep); border: 1px solid var(--line); border-radius: 12px; margin-top: 1rem; }
+  #sketch text { font-family: "JetBrains Mono", monospace; font-size: 11px; fill: var(--muted); }
+
+  .how { margin-top: 2rem; color: var(--muted); }
+  .how h2 { font-family: "Bungee", Impact, sans-serif; color: var(--sand); font-size: 1.15rem; margin-bottom: .5rem; }
+  .how p { margin-bottom: .6rem; }
+  .how code { font-family: "JetBrains Mono", monospace; color: var(--sand); background: var(--deep); padding: .05rem .35rem; border-radius: 4px; }
+  footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+
+  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/">Jolly Tiki</a>
+    <a class="back" href="/">← All tools</a>
+  </header>
+
+  <h1>Area by Coordinates</h1>
+  <p class="lede">Paste your boundary points in order around the parcel. You get the area in square feet and acres, the perimeter, and every course.</p>
+
+  <div class="layout">
+    <div class="panel">
+      <label for="pts">Points, one per line</label>
+      <textarea id="pts" spellcheck="false">1, 5000.00, 5000.00
+2, 5245.67, 5132.89
+3, 5198.12, 5401.55
+4, 4962.30, 5355.20</textarea>
+      <p class="hint">Commas, spaces or tabs all work. A PNEZD export from Civil 3D or your data collector pastes straight in. Lines starting with # are ignored.</p>
+      <div class="opts">
+        <div>
+          <label for="order">Column order</label>
+          <select id="order">
+            <option value="NE" selected>Northing, Easting</option>
+            <option value="EN">Easting, Northing</option>
+          </select>
+        </div>
+        <div>
+          <label for="pmode">Point numbers in first column</label>
+          <select id="pmode">
+            <option value="auto" selected>Auto-detect</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+        <div>
+          <label for="units">Units</label>
+          <select id="units">
+            <option value="usft" selected>US survey feet</option>
+            <option value="ift">International feet</option>
+            <option value="m">Meters</option>
+          </select>
+        </div>
+        <div>
+          <label for="sp">Seconds precision</label>
+          <select id="sp"><option value="0" selected>Whole seconds</option><option value="1">Tenths</option><option value="2">Hundredths</option></select>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="copy" type="button">Copy results</button>
+        <button id="clear" type="button">Clear</button>
+        <span class="copied" id="copied">Copied!</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="big">
+        <div class="k">Area</div><div class="v" id="r-area1">—</div>
+        <div class="k" id="r-area2k">Acres</div><div class="v" id="r-area2">—</div>
+        <table class="stats">
+          <tr id="row-ha" style="display:none"><td>Hectares</td><td id="r-ha">—</td></tr>
+          <tr><td>Perimeter</td><td id="r-perim">—</td></tr>
+          <tr><td>Points</td><td id="r-count">—</td></tr>
+          <tr><td>Direction</td><td id="r-dir">—</td></tr>
+        </table>
+      </div>
+      <div class="msgs" id="msgs"></div>
+    </div>
+  </div>
+
+  <svg id="sketch" viewBox="0 0 640 340" role="img" aria-label="Sketch of the parcel"></svg>
+
+  <div class="panel courses-wrap">
+    <table class="courses">
+      <thead><tr><th>Course</th><th>Bearing</th><th style="text-align:right">Distance</th></tr></thead>
+      <tbody id="courses"></tbody>
+    </table>
+  </div>
+
+  <div class="how">
+    <h2>How it works</h2>
+    <p>Area uses the coordinate (shoelace) method: <code>2A = Σ (E₁·N₂ − E₂·N₁)</code> around the figure. The last point is closed back to the first automatically, so you don't need to repeat it. If you do, it's only counted once.</p>
+    <p>Points have to be in order around the boundary, either direction. If two courses cross each other, the figure is a bow-tie and the area is wrong, so you'll get a warning.</p>
+    <p>Acres are square feet ÷ 43,560. Areas are plane (grid) areas. For State Plane coordinates, divide by the combined scale factor squared to get ground area.</p>
+  </div>
+
+  <footer>© <span id="yr"></span> jollytiki.com · Provided as-is. Check your work before it goes on a plat.</footer>
+</div>
+
+<script>
+// ===== MATH START =====
+var NL = String.fromCharCode(10), CR = String.fromCharCode(13), TAB = String.fromCharCode(9);
+function toNum(s) {
+  var t = String(s).trim();
+  if (t === '') return NaN;
+  var v = Number(t);
+  return isFinite(v) ? v : NaN;
+}
+function dms(deg, secDp) {
+  secDp = secDp || 0;
+  var f = Math.pow(10, secDp);
+  var totalSec = Math.round(deg * 3600 * f) / f;
+  var d = Math.floor(totalSec / 3600 + 1e-12);
+  var rem = totalSec - d * 3600;
+  var m = Math.floor(rem / 60 + 1e-12);
+  var s = rem - m * 60;
+  if (s < 0) s = 0;
+  var sStr = s.toFixed(secDp);
+  var sPad = secDp ? sStr.padStart(3 + secDp, '0') : sStr.padStart(2, '0');
+  return d + '°' + String(m).padStart(2, '0') + "'" + sPad + '"';
+}
+function normAz(a) { a = a % 360; if (a < 0) a += 360; return a; }
+function roundAz(az, secDp) { var f = Math.pow(10, secDp || 0); return normAz(Math.round(az * 3600 * f) / (3600 * f)); }
+function bearingFromAz(az, secDp) {
+  az = roundAz(az, secDp);
+  var ns, ew, ang;
+  if (az <= 90)       { ns = 'N'; ew = 'E'; ang = az; }
+  else if (az <= 180) { ns = 'S'; ew = 'E'; ang = 180 - az; }
+  else if (az <= 270) { ns = 'S'; ew = 'W'; ang = az - 180; }
+  else                { ns = 'N'; ew = 'W'; ang = 360 - az; }
+  return ns + ' ' + dms(ang, secDp) + ' ' + ew;
+}
+// Split a line on commas, semicolons, tabs and spaces
+function tokens(line) {
+  var t = line.split(',').join(' ').split(';').join(' ').split(TAB).join(' ').split(' ');
+  return t.filter(function (x) { return x !== ''; });
+}
+// Returns { pts: [{id, n, e}], notes: [{level, text}] }
+function parsePoints(text, order, pmode) {
+  var lines = text.split(CR).join('').split(NL);
+  var pts = [], notes = [], skipped = [];
+  for (var i = 0; i < lines.length; i++) {
+    var raw = lines[i].trim();
+    if (raw === '' || raw.charAt(0) === '#' || raw.indexOf('//') === 0) continue;
+    var tk = tokens(raw);
+    var hasId = pmode === 'yes' || (pmode === 'auto' && tk.length >= 3);
+    var off = hasId ? 1 : 0;
+    if (tk.length < off + 2) { skipped.push(i + 1); continue; }
+    var a = toNum(tk[off]), b = toNum(tk[off + 1]);
+    if (isNaN(a) || isNaN(b)) { skipped.push(i + 1); continue; }
+    var n = order === 'EN' ? b : a, e = order === 'EN' ? a : b;
+    pts.push({ id: hasId ? tk[0] : String(pts.length + 1), n: n, e: e, line: i + 1 });
+  }
+  if (skipped.length) notes.push({ level: 'warn', text: 'Skipped line' + (skipped.length > 1 ? 's ' : ' ') + skipped.join(', ') + ': couldn’t read two coordinates.' });
+  if (pts.length >= 2) {
+    var f = pts[0], l = pts[pts.length - 1];
+    if (f.n === l.n && f.e === l.e) {
+      pts.pop();
+      notes.push({ level: 'ok', text: 'Last point repeats the first, so it was counted once to close the figure.' });
+    }
+  }
+  return { pts: pts, notes: notes };
+}
+// Signed area: positive = counter-clockwise, negative = clockwise (x = E, y = N)
+function signedArea(pts) {
+  var s = 0, k = pts.length;
+  for (var i = 0; i < k; i++) {
+    var p = pts[i], q = pts[(i + 1) % k];
+    s += p.e * q.n - q.e * p.n;
+  }
+  return s / 2;
+}
+function courses(pts) {
+  var out = [], k = pts.length;
+  for (var i = 0; i < k; i++) {
+    var p = pts[i], q = pts[(i + 1) % k];
+    var dN = q.n - p.n, dE = q.e - p.e, dist = Math.hypot(dN, dE);
+    out.push({ from: p.id, to: q.id, dist: dist, az: dist === 0 ? null : normAz(Math.atan2(dE, dN) * 180 / Math.PI) });
+  }
+  return out;
+}
+function cross(ax, ay, bx, by, cx, cy) { return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax); }
+function segsCross(p1, p2, p3, p4) {
+  var d1 = cross(p3.e, p3.n, p4.e, p4.n, p1.e, p1.n);
+  var d2 = cross(p3.e, p3.n, p4.e, p4.n, p2.e, p2.n);
+  var d3 = cross(p1.e, p1.n, p2.e, p2.n, p3.e, p3.n);
+  var d4 = cross(p1.e, p1.n, p2.e, p2.n, p4.e, p4.n);
+  return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0));
+}
+// Returns list of [i, j] course index pairs that cross (non-adjacent only)
+function crossings(pts) {
+  var k = pts.length, out = [];
+  if (k < 4) return out;
+  for (var i = 0; i < k; i++) {
+    for (var j = i + 2; j < k; j++) {
+      if (i === 0 && j === k - 1) continue; // adjacent through the closing course
+      if (segsCross(pts[i], pts[(i + 1) % k], pts[j], pts[(j + 1) % k])) out.push([i, j]);
+    }
+  }
+  return out;
+}
+var SQFT_PER_ACRE = 43560, SQM_PER_ACRE = 4046.8564224;
+function areaReport(absArea, units) {
+  if (units === 'm') return { primary: absArea, primaryUnit: 'sq m', acres: absArea / SQM_PER_ACRE, hectares: absArea / 10000 };
+  return { primary: absArea, primaryUnit: 'sq ft', acres: absArea / SQFT_PER_ACRE, hectares: null };
+}
+// ===== MATH END =====
+
+if (typeof document !== 'undefined') {
+  var $ = function (id) { return document.getElementById(id); };
+  var last = null;
+  var unitLabel = { usft: 'US ft', ift: 'ft', m: 'm' };
+
+  function fmt(x, dp) { return x.toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp }); }
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  function calc() {
+    var order = $('order').value, pmode = $('pmode').value, units = $('units').value, sp = +$('sp').value;
+    var parsed = parsePoints($('pts').value, order, pmode);
+    var pts = parsed.pts, notes = parsed.notes.slice();
+    var ul = unitLabel[units];
+    var reset = function () {
+      ['r-area1', 'r-area2', 'r-ha', 'r-perim', 'r-count', 'r-dir'].forEach(function (i) { $(i).textContent = '—'; });
+      $('courses').innerHTML = ''; $('sketch').innerHTML = ''; last = null;
+    };
+    if (pts.length < 3) {
+      reset();
+      notes.push({ level: 'err', text: 'Need at least 3 points to make an area. Found ' + pts.length + '.' });
+      showNotes(notes); return;
+    }
+    var sa = signedArea(pts), A = Math.abs(sa);
+    var rep = areaReport(A, units);
+    var cs = courses(pts);
+    var perim = cs.reduce(function (s, c) { return s + c.dist; }, 0);
+    var x = crossings(pts);
+
+    $('r-area1').textContent = fmt(rep.primary, 2) + ' ' + rep.primaryUnit;
+    $('r-area2').textContent = fmt(rep.acres, 4) + ' ac';
+    $('row-ha').style.display = rep.hectares === null ? 'none' : '';
+    if (rep.hectares !== null) $('r-ha').textContent = fmt(rep.hectares, 4) + ' ha';
+    $('r-perim').textContent = fmt(perim, 3) + ' ' + ul;
+    $('r-count').textContent = pts.length;
+    $('r-dir').textContent = sa > 0 ? 'Counter-clockwise' : sa < 0 ? 'Clockwise' : '—';
+
+    if (A === 0) notes.push({ level: 'err', text: 'Zero area. The points all fall on one line.' });
+    if (x.length) {
+      var desc = x.slice(0, 3).map(function (pr) { return cs[pr[0]].from + '–' + cs[pr[0]].to + ' crosses ' + cs[pr[1]].from + '–' + cs[pr[1]].to; }).join('; ');
+      notes.push({ level: 'err', text: 'Courses cross each other (' + desc + (x.length > 3 ? '; and more' : '') + '). Check the point order. The area shown is not right for a crossed figure.' });
+    }
+    var zero = cs.filter(function (c) { return c.dist === 0; });
+    if (zero.length) notes.push({ level: 'warn', text: 'Duplicate point: ' + zero.map(function (c) { return c.from + '–' + c.to; }).join(', ') + ' has zero length.' });
+    if (!x.length && A > 0) notes.push({ level: 'ok', text: 'Figure closes back to point ' + esc(pts[0].id) + '. No crossing courses.' });
+
+    var rows = cs.map(function (c, i) {
+      var closing = i === cs.length - 1 ? ' <span style="color:var(--muted)">(closing)</span>' : '';
+      return '<tr><td>' + esc(c.from) + ' → ' + esc(c.to) + closing + '</td><td>' + (c.az === null ? 'n/a' : bearingFromAz(c.az, sp)) + '</td><td class="num">' + fmt(c.dist, 3) + '</td></tr>';
+    }).join('');
+    $('courses').innerHTML = rows;
+    last = { rep: rep, perim: perim, ul: ul, cs: cs, sp: sp, count: pts.length };
+    draw(pts);
+    showNotes(notes);
+  }
+
+  function showNotes(notes) {
+    $('msgs').innerHTML = notes.map(function (n) { return '<div class="msg ' + n.level + '">' + n.text + '</div>'; }).join('');
+  }
+
+  function draw(pts) {
+    var W = 640, H = 340, pad = 40;
+    var minE = Infinity, maxE = -Infinity, minN = Infinity, maxN = -Infinity;
+    pts.forEach(function (p) { minE = Math.min(minE, p.e); maxE = Math.max(maxE, p.e); minN = Math.min(minN, p.n); maxN = Math.max(maxN, p.n); });
+    var spanE = (maxE - minE) || 1, spanN = (maxN - minN) || 1;
+    var s = Math.min((W - 2 * pad) / spanE, (H - 2 * pad) / spanN);
+    var ox = (W - spanE * s) / 2, oy = (H - spanN * s) / 2;
+    var X = function (e) { return ox + (e - minE) * s; };
+    var Y = function (n) { return H - oy - (n - minN) * s; };
+    var poly = pts.map(function (p) { return X(p.e).toFixed(1) + ',' + Y(p.n).toFixed(1); }).join(' ');
+    var cx = pts.reduce(function (a, p) { return a + X(p.e); }, 0) / pts.length;
+    var cy = pts.reduce(function (a, p) { return a + Y(p.n); }, 0) / pts.length;
+    var dots = pts.map(function (p) {
+      var x = X(p.e), y = Y(p.n), dx = x - cx, dy = y - cy, L = Math.hypot(dx, dy) || 1;
+      return '<circle cx="' + x + '" cy="' + y + '" r="4.5" fill="#ff8a3d"/>' +
+             '<text x="' + (x + dx / L * 14) + '" y="' + (y + dy / L * 14 + 4) + '" text-anchor="middle">' + esc(p.id) + '</text>';
+    }).join('');
+    var areaTxt = $('r-area2').textContent;
+    $('sketch').innerHTML =
+      '<polygon points="' + poly + '" fill="rgba(255,201,74,.08)" stroke="#ffc94a" stroke-width="2" stroke-linejoin="round"/>' + dots +
+      '<text x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" style="fill:#ffc94a;font-size:13px">' + areaTxt + '</text>' +
+      '<g transform="translate(' + (W - 26) + ' ' + (H - 18) + ')"><path d="M0 -26 L7 0 L0 -6 L-7 0 Z" fill="#ffc94a"/><text x="-4" y="-30" style="fill:#ffc94a">N</text></g>';
+  }
+
+  ['pts', 'order', 'pmode', 'units', 'sp'].forEach(function (f) { $(f).addEventListener('input', calc); });
+  $('clear').onclick = function () { $('pts').value = ''; calc(); $('pts').focus(); };
+  $('copy').onclick = function () {
+    if (!last) return;
+    var L = last, lines = [];
+    lines.push('Area: ' + $('r-area1').textContent + ' (' + $('r-area2').textContent + ')');
+    lines.push('Perimeter: ' + $('r-perim').textContent + '   Points: ' + L.count);
+    lines.push('');
+    L.cs.forEach(function (c) { lines.push(c.from + ' -> ' + c.to + TAB + (c.az === null ? 'n/a' : bearingFromAz(c.az, L.sp)) + TAB + fmt(c.dist, 3)); });
+    var txt = lines.join(NL);
+    if (navigator.clipboard) navigator.clipboard.writeText(txt).then(function () {
+      $('copied').style.opacity = 1; setTimeout(function () { $('copied').style.opacity = 0; }, 1500);
+    }).catch(function () {});
+  };
+  $('yr').textContent = new Date().getFullYear();
+  calc();
+}
+</script>
+</body>
+</html>
