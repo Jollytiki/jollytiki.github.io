@@ -250,7 +250,7 @@ if (typeof document !== 'undefined') {
   function draw(r, o) {
     const W = 600, H = 260, pad = 50;
     const span = Math.max(Math.abs(r.dN), Math.abs(r.dE));
-    const s = (Math.min(W, H) / 2 - pad) / span;
+    const s = Math.min((W - 2 * pad) / (Math.abs(r.dE) || 1e-9), (H - 2 * pad) / (Math.abs(r.dN) || 1e-9));
     const cx = W / 2, cy = H / 2;
     const x1 = cx - r.dE * s / 2, y1 = cy + r.dN * s / 2;
     const x2 = cx + r.dE * s / 2, y2 = cy - r.dN * s / 2;
