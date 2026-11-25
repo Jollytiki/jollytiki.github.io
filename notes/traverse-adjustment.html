@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Traverse Adjustment, Step by Step | Jolly Tiki</title>
+<meta name="description" content="A worked traverse adjustment: balance the angles, compute bearings, latitudes and departures, find the error of closure and precision, and adjust with the Compass (Bowditch) rule.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e; --deep: #071a1d; --panel: #12363b; --line: #1f4b51;
+    --sand: #f4e3c1; --muted: #a9bfb9; --torch: #ff8a3d; --flame: #ffc94a;
+    --hibiscus: #e8475c; --leaf: #2f8f6b; --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #071a1d; }
+  body { font-family: "Karla", system-ui, sans-serif; color: var(--sand); line-height: 1.65;
+    background: radial-gradient(ellipse at 50% -10%, #1d4f55, transparent 55%), linear-gradient(180deg, var(--night), var(--deep) 70%);
+    background-attachment: fixed; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(244,227,193,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,227,193,.035) 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .wrap { position: relative; max-width: 760px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; }
+  .brand { color: var(--flame); font-family: "Bungee", Impact, sans-serif; font-size: 1.2rem; text-decoration: none; }
+  header a.back { color: var(--muted); text-decoration: none; font-weight: 600; }
+  header a.back:hover { color: var(--flame); }
+
+  .eyebrow { font-family: "JetBrains Mono", monospace; font-size: .78rem; letter-spacing: .14em; color: var(--torch); text-transform: uppercase; margin-top: 1.5rem; }
+  h1 { font-family: "Bungee", Impact, sans-serif; color: var(--flame); font-size: clamp(1.8rem, 5vw, 2.5rem); line-height: 1.1;
+       text-shadow: 0 3px 0 var(--wood-dark); margin: .4rem 0 .8rem; }
+  .lede { font-size: 1.15rem; color: var(--sand); opacity: .92; margin-bottom: 1.5rem; }
+  article h2 { font-family: "Bungee", Impact, sans-serif; color: var(--sand); font-size: 1.2rem; letter-spacing: .02em; margin: 2.2rem 0 .6rem; }
+  article h3 { color: var(--flame); font-size: 1.05rem; margin: 1.4rem 0 .3rem; }
+  article p { margin-bottom: .9rem; color: var(--sand); opacity: .9; }
+  article ul, article ol { margin: 0 0 1rem 1.3rem; color: var(--sand); opacity: .9; }
+  article li { margin-bottom: .35rem; }
+  article strong { color: var(--flame); font-weight: 700; }
+  code { font-family: "JetBrains Mono", monospace; font-size: .88em; color: var(--sand); background: var(--deep); padding: .05rem .35rem; border-radius: 4px; }
+  .formula { font-family: "JetBrains Mono", monospace; background: var(--deep); border: 1px solid var(--line); border-radius: 10px;
+             padding: .9rem 1.1rem; margin: 0 0 1rem; color: var(--flame); overflow-x: auto; white-space: pre; line-height: 1.6; }
+  .callout { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--torch); border-radius: 0 10px 10px 0;
+             padding: .9rem 1.1rem; margin: 1.2rem 0; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .k { font-family: "JetBrains Mono", monospace; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--torch); display: block; margin-bottom: .3rem; }
+  .tablewrap { overflow-x: auto; margin: 0 0 1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td, th { padding: .45rem .5rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+  td.num { font-family: "JetBrains Mono", monospace; white-space: nowrap; }
+  .more { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+  .more h2 { font-family: "Bungee", Impact, sans-serif; font-size: 1rem; color: var(--sand); margin-bottom: .6rem; }
+  .more a { display: block; color: var(--muted); text-decoration: none; padding: .3rem 0; font-weight: 600; }
+  .more a:hover { color: var(--flame); }
+  footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/">Jolly Tiki</a>
+    <a class="back" href="/#notes">← Field Notes</a>
+  </header>
+<article>
+  <div class="eyebrow">Field Notes · Computations</div>
+  <h1>Traverse adjustment, step by step</h1>
+  <p class="lede">Take a four-sided loop from field angles to adjusted coordinates: balance the angles, carry the bearings around, check the closure, then spread the error with the Compass rule.</p>
+
+  <p>This note works one traverse by hand, the same one that loads when you press <strong>Example</strong> in the <a href="../traverse.html" style="color:var(--flame)">Traverse Adjustment</a> tool. Do it on paper once and the tool's numbers will make sense.</p>
+
+  <h2>The example traverse</h2>
+  <p>A made-up closed loop of four courses, run clockwise from a point called Start at N 5,000.000, E 5,000.000. The basis of bearings is the first course, N 12°15'30" E. Distances are horizontal, in feet:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Course</th><th>From → to</th><th>Distance</th></tr>
+    <tr><td>1</td><td>Start → 1</td><td class="num">251.36</td></tr>
+    <tr><td>2</td><td>1 → 2</td><td class="num">312.48</td></tr>
+    <tr><td>3</td><td>2 → 3</td><td class="num">276.10</td></tr>
+    <tr><td>4</td><td>3 → Start</td><td class="num">329.22</td></tr>
+  </table></div>
+
+  <h2>Step 1: Balance the angles</h2>
+  <p>The interior angles of any closed figure have to add up to a fixed total:</p>
+  <div class="formula">Sum of interior angles = (n − 2) × 180°
+                      = (4 − 2) × 180° = 360°00'00"</div>
+  <p>Here are the measured interior angles:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Point</th><th>Measured</th><th>Correction</th><th>Balanced</th></tr>
+    <tr><td>1</td><td class="num">96°55'50"</td><td class="num">−5"</td><td class="num">96°55'45"</td></tr>
+    <tr><td>2</td><td class="num">86°57'05"</td><td class="num">−5"</td><td class="num">86°57'00"</td></tr>
+    <tr><td>3</td><td class="num">88°29'07"</td><td class="num">−5"</td><td class="num">88°29'02"</td></tr>
+    <tr><td>Start</td><td class="num">87°38'18"</td><td class="num">−5"</td><td class="num">87°38'13"</td></tr>
+    <tr><td><strong>Total</strong></td><td class="num">360°00'20"</td><td class="num">−20"</td><td class="num">360°00'00"</td></tr>
+  </table></div>
+  <p>The angles are 20" over. Each setup carries about the same pointing and centering error no matter how long the lines are, so the usual fix is to take the same amount off every angle: 20" ÷ 4 = 5". If it doesn't divide evenly, put the odd seconds on the angles with the shortest sights, since those are the least certain.</p>
+  <p>Before you balance anything, check the misclosure is reasonable. A common rule of thumb allows about <code>K√n</code> seconds, where n is the number of angles and K depends on the instrument and the job (often 10" to 30"). With K = 15", four angles allow 30", so 20" passes. A miss of a few minutes isn't error to be spread around. It's a blunder, so go find it.</p>
+
+  <h2>Step 2: Carry the bearings around</h2>
+  <p>Going clockwise around the loop, each interior angle is on your right. Work in azimuths:</p>
+  <div class="formula">Next azimuth = previous azimuth + 180° − interior angle</div>
+  <div class="tablewrap"><table>
+    <tr><th>Course</th><th>Work</th><th>Azimuth</th><th>Bearing</th></tr>
+    <tr><td>1</td><td>basis of bearings</td><td class="num">12°15'30"</td><td class="num">N 12°15'30" E</td></tr>
+    <tr><td>2</td><td class="num">12°15'30" + 180° − 96°55'45"</td><td class="num">95°19'45"</td><td class="num">S 84°40'15" E</td></tr>
+    <tr><td>3</td><td class="num">95°19'45" + 180° − 86°57'00"</td><td class="num">188°22'45"</td><td class="num">S 8°22'45" W</td></tr>
+    <tr><td>4</td><td class="num">188°22'45" + 180° − 88°29'02"</td><td class="num">279°53'43"</td><td class="num">N 80°06'17" W</td></tr>
+    <tr><td>check</td><td class="num">279°53'43" + 180° − 87°38'13"</td><td class="num">372°15'30"</td><td class="num">= 12°15'30" ✓</td></tr>
+  </table></div>
+  <p>Always carry the last angle through to get back to the first course. If you don't land exactly on the basis of bearings, there's an arithmetic mistake somewhere above it. The <a href="../bearing-angle.html" style="color:var(--flame)">Angle Between Bearings</a> tool goes the other way, from two bearings to the angle between them, which is handy for checking a step.</p>
+
+  <h2>Step 3: Latitudes and departures</h2>
+  <p>Break every course into its north–south part (latitude) and east–west part (departure). North and east are positive:</p>
+  <div class="formula">Latitude  = distance × cos(azimuth)
+Departure = distance × sin(azimuth)</div>
+  <div class="tablewrap"><table>
+    <tr><th>Course</th><th>Bearing</th><th>Distance</th><th>Latitude</th><th>Departure</th></tr>
+    <tr><td>1</td><td class="num">N 12°15'30" E</td><td class="num">251.36</td><td class="num">+245.629</td><td class="num">+53.369</td></tr>
+    <tr><td>2</td><td class="num">S 84°40'15" E</td><td class="num">312.48</td><td class="num">−29.022</td><td class="num">+311.129</td></tr>
+    <tr><td>3</td><td class="num">S 8°22'45" W</td><td class="num">276.10</td><td class="num">−273.153</td><td class="num">−40.234</td></tr>
+    <tr><td>4</td><td class="num">N 80°06'17" W</td><td class="num">329.22</td><td class="num">+56.576</td><td class="num">−324.322</td></tr>
+    <tr><td><strong>Total</strong></td><td></td><td class="num">1,169.16</td><td class="num">+0.030</td><td class="num">−0.059</td></tr>
+  </table></div>
+  <p>The totals are worked from unrounded values. The departure column only adds to −0.058 as printed. For a loop both totals should be zero. They aren't, and that's the misclosure.</p>
+
+  <h2>Step 4: Error of closure and precision</h2>
+  <p>The two totals are the legs of a little right triangle. The traverse ends 0.030 ft too far north and 0.059 ft too far west of where it started:</p>
+  <div class="formula">Error of closure = √(0.030² + 0.059²) = 0.066 ft
+Precision        = 1,169.16 ÷ 0.066  = 1:17,807</div>
+  <p>The tool shows the same numbers, plus the direction of the error: N 63°04'16" W.</p>
+
+  <div class="callout"><span class="k">Read the direction of the error</span><p>A <strong>distance</strong> blunder pushes the error along that course, so if the error's direction matches one of your bearings (or its reverse), recheck that distance first. A blunder in an <strong>angle</strong> swings everything after it, and the error runs roughly at right angles to the line from that point to the closing point. Here N 63° W doesn't match any course, which is what plain random error looks like.</p></div>
+
+  <p>Is 1:17,807 good enough? That depends on who's asking. Some states and clients still set a minimum ratio, such as 1:10,000 for boundary work, so check what applies to you. The ALTA/NSPS standards use relative positional precision instead: 0.07 ft (2 cm) plus 50 ppm at 95% confidence, which gives this traverse about 0.13 ft of room. Bigger misclosures than your standard allows mean going back out, not adjusting.</p>
+
+  <h2>Step 5: The Compass (Bowditch) rule</h2>
+  <p>The Compass rule assumes the error builds up in proportion to distance, so each course gets a share of the correction equal to its share of the total length:</p>
+  <div class="formula">Lat. correction = −(total latitude)  × course distance ÷ total length
+Dep. correction = −(total departure) × course distance ÷ total length</div>
+  <p>Course 1, for example: <code>−0.0297 × 251.36 ÷ 1,169.16 = −0.0064</code> in latitude and <code>+0.0585 × 251.36 ÷ 1,169.16 = +0.0126</code> in departure.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Course</th><th>Lat. corr.</th><th>Dep. corr.</th><th>Adj. latitude</th><th>Adj. departure</th></tr>
+    <tr><td>1</td><td class="num">−0.0064</td><td class="num">+0.0126</td><td class="num">+245.623</td><td class="num">+53.381</td></tr>
+    <tr><td>2</td><td class="num">−0.0079</td><td class="num">+0.0156</td><td class="num">−29.030</td><td class="num">+311.145</td></tr>
+    <tr><td>3</td><td class="num">−0.0070</td><td class="num">+0.0138</td><td class="num">−273.160</td><td class="num">−40.220</td></tr>
+    <tr><td>4</td><td class="num">−0.0084</td><td class="num">+0.0165</td><td class="num">+56.567</td><td class="num">−324.306</td></tr>
+    <tr><td><strong>Total</strong></td><td class="num">−0.030</td><td class="num">+0.059</td><td class="num">0.000</td><td class="num">0.000</td></tr>
+  </table></div>
+  <p>The tool shows the same thing as running totals: each point's correction is the sum of the course corrections before it, so point 1 gets −0.006 N, +0.013 E, point 2 gets −0.014, +0.028, and so on until Start gets the full −0.030, +0.059 and closes exactly.</p>
+
+  <h2>Step 6: Adjusted coordinates, bearings and distances</h2>
+  <p>Add the adjusted latitudes and departures to the start point to get coordinates, then inverse between them for the adjusted courses:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Point</th><th>Northing</th><th>Easting</th><th>Adjusted course to here</th></tr>
+    <tr><td>Start</td><td class="num">5,000.000</td><td class="num">5,000.000</td><td></td></tr>
+    <tr><td>1</td><td class="num">5,245.623</td><td class="num">5,053.381</td><td class="num">N 12°15'41" E 251.356</td></tr>
+    <tr><td>2</td><td class="num">5,216.592</td><td class="num">5,364.526</td><td class="num">S 84°40'11" E 312.496</td></tr>
+    <tr><td>3</td><td class="num">4,943.433</td><td class="num">5,324.306</td><td class="num">S 8°22'34" W 276.105</td></tr>
+    <tr><td>Start</td><td class="num">5,000.000</td><td class="num">5,000.000</td><td class="num">N 80°06'20" W 329.202</td></tr>
+  </table></div>
+  <p>Notice the bearings moved a few seconds too. The Compass rule adjusts angles and distances together, so the adjusted courses won't match the field angles exactly. Adjusted, the loop encloses 84,418.20 sq ft, or 1.9380 acres. The <a href="../inverse.html" style="color:var(--flame)">Inverse</a> and <a href="../area.html" style="color:var(--flame)">Area by Coordinates</a> tools will check both.</p>
+
+  <h2>Other ways to adjust</h2>
+  <ul>
+    <li><strong>Transit rule.</strong> Splits the latitude error by each course's share of the total latitudes, and the departure error the same way. The thinking is that angles were measured better than distances. The catch is that the result depends on which way north is, so rotating the same traverse gives a different adjustment. It's mostly seen in old textbooks now.</li>
+    <li><strong>Crandall rule.</strong> Holds the balanced angles fixed and puts all the correction into the distances. Useful when the angles are known to be much better than the taping.</li>
+    <li><strong>Least squares.</strong> Weights every angle and distance by how well it was measured, adjusts them all at once, and tells you how good each point is. It's the right tool for networks, traverses with extra ties, and anything mixed with GNSS. Most survey software has it built in.</li>
+  </ul>
+  <p>For a simple loop measured with a modern total station, Compass and least squares usually land within a few hundredths of each other.</p>
+
+  <div class="callout"><span class="k">What closure can't tell you</span><p>A loop that starts and ends on the same point can close perfectly and still be wrong. A bad basis of bearings rotates the whole figure, and a wrong EDM scale or prism constant stretches it, without changing the closure at all. To catch those, tie into known control at both ends, or check a line against record. And if you're on State Plane, apply your <a href="grid-to-ground.html" style="color:var(--flame)">grid-to-ground factor</a> before you compare.</p></div>
+</article>
+  <div class="more">
+    <h2>More field notes</h2>
+    <a href="grid-to-ground.html">Grid to ground, step by step →</a> <a href="coordinate-systems.html">Coordinate systems without the headache →</a> <a href="civil3d-survey-figures.html">Civil 3D survey figure tips →</a> <a href="old-surveys.html">How they surveyed it back then →</a>
+  </div>
+  <footer>© <span id="yr"></span> jollytiki.com · General information, not legal or professional advice. Check your state's rules and your own work.</footer>
+</div>
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+<script data-goatcounter="https://jollytiki.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
