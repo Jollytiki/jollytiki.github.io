@@ -142,7 +142,7 @@
     <p><b>State Plane</b> zones use Lambert Conformal Conic or Transverse Mercator, with the parameters for all 122 NAD83 zones taken from the EPSG database. Every zone is tested to within a millimeter of PROJ. Alaska zone 1 uses an Oblique Mercator projection, which isn't supported, so it's listed but can't be picked.</p>
     <p><b>Units matter.</b> Most states defined their zones in US survey feet (1200/3937 m). A few, including Arizona, Michigan, Montana, Oregon and South Carolina, used the international foot (0.3048 m). The two differ by 2 parts per million, which is several feet at state plane values in the millions. The US survey foot was officially retired at the end of 2022, but most existing state plane coordinates still use it.</p>
     <p><b>Datum.</b> Everything here is on the GRS80 ellipsoid, which NAD83 uses. This converts between grid and geographic coordinates on the same datum. It doesn't shift between datums (NAD83 to WGS84, or NAD27), which can move a point a meter or more.</p>
-    <p>The <b>grid scale factor</b> is grid distance divided by ellipsoid distance at the point. The <b>convergence angle</b> is the angle between grid north and true north. Geodetic azimuth = grid azimuth + convergence.</p>
+    <p>The <b>grid scale factor</b> is grid distance divided by ellipsoid distance at the point. The <b>convergence angle</b> is the angle between grid north and true north. Geodetic azimuth = grid azimuth + convergence. For a worked example that turns these into a grid-to-ground combined factor, see <a href="notes/grid-to-ground.html">Grid to ground, step by step</a>.</p>
     <p>Latitude and longitude can be decimal degrees or DMS, with a sign or a letter: <code>-76.612</code>, <code>76 36 43.2 W</code>, <code>76°36'43.2"W</code>.</p>
   </div>
 
@@ -529,7 +529,8 @@ if (typeof document !== 'undefined') {
     const gamma = sc.gamma;
     const gridRows = [
       ['Northing', N.toFixed(dp), dir === 'grid'], ['Easting', E.toFixed(dp), dir === 'grid'],
-      ['Units', Z.unitName], ['Zone', Z.name], null,
+      ['Units', Z.unitName], ['Zone', Z.name],
+      ['Projection', Z.proj.method === 'tm' ? 'Transverse Mercator' : 'Lambert Conformal Conic'], null,
       ['Grid scale factor', sc.k.toFixed(8)],
       ['Convergence angle', (gamma < 0 ? '−' : '') + dms(Math.abs(gamma), 2)],
       ['Grid north is', Math.abs(gamma) < 1e-9 ? 'on true north' : (gamma > 0 ? 'east' : 'west') + ' of true north']

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grid to Ground, Step by Step | Jolly Tiki</title>
+<meta name="description" content="A worked grid-to-ground example: get the State Plane scale factor and convergence from the converter, build the combined factor, and convert distances, bearings, coordinates and areas.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e; --deep: #071a1d; --panel: #12363b; --line: #1f4b51;
+    --sand: #f4e3c1; --muted: #a9bfb9; --torch: #ff8a3d; --flame: #ffc94a;
+    --hibiscus: #e8475c; --leaf: #2f8f6b; --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #071a1d; }
+  body { font-family: "Karla", system-ui, sans-serif; color: var(--sand); line-height: 1.65;
+    background: radial-gradient(ellipse at 50% -10%, #1d4f55, transparent 55%), linear-gradient(180deg, var(--night), var(--deep) 70%);
+    background-attachment: fixed; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(244,227,193,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,227,193,.035) 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .wrap { position: relative; max-width: 760px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; }
+  .brand { color: var(--flame); font-family: "Bungee", Impact, sans-serif; font-size: 1.2rem; text-decoration: none; }
+  header a.back { color: var(--muted); text-decoration: none; font-weight: 600; }
+  header a.back:hover { color: var(--flame); }
+
+  .eyebrow { font-family: "JetBrains Mono", monospace; font-size: .78rem; letter-spacing: .14em; color: var(--torch); text-transform: uppercase; margin-top: 1.5rem; }
+  h1 { font-family: "Bungee", Impact, sans-serif; color: var(--flame); font-size: clamp(1.8rem, 5vw, 2.5rem); line-height: 1.1;
+       text-shadow: 0 3px 0 var(--wood-dark); margin: .4rem 0 .8rem; }
+  .lede { font-size: 1.15rem; color: var(--sand); opacity: .92; margin-bottom: 1.5rem; }
+  article h2 { font-family: "Bungee", Impact, sans-serif; color: var(--sand); font-size: 1.2rem; letter-spacing: .02em; margin: 2.2rem 0 .6rem; }
+  article h3 { color: var(--flame); font-size: 1.05rem; margin: 1.4rem 0 .3rem; }
+  article p { margin-bottom: .9rem; color: var(--sand); opacity: .9; }
+  article ul, article ol { margin: 0 0 1rem 1.3rem; color: var(--sand); opacity: .9; }
+  article li { margin-bottom: .35rem; }
+  article strong { color: var(--flame); font-weight: 700; }
+  code { font-family: "JetBrains Mono", monospace; font-size: .88em; color: var(--sand); background: var(--deep); padding: .05rem .35rem; border-radius: 4px; }
+  .formula { font-family: "JetBrains Mono", monospace; background: var(--deep); border: 1px solid var(--line); border-radius: 10px;
+             padding: .9rem 1.1rem; margin: 0 0 1rem; color: var(--flame); overflow-x: auto; white-space: pre; line-height: 1.6; }
+  .callout { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--torch); border-radius: 0 10px 10px 0;
+             padding: .9rem 1.1rem; margin: 1.2rem 0; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .k { font-family: "JetBrains Mono", monospace; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--torch); display: block; margin-bottom: .3rem; }
+  .tablewrap { overflow-x: auto; margin: 0 0 1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td, th { padding: .45rem .5rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+  td.num { font-family: "JetBrains Mono", monospace; white-space: nowrap; }
+  .more { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+  .more h2 { font-family: "Bungee", Impact, sans-serif; font-size: 1rem; color: var(--sand); margin-bottom: .6rem; }
+  .more a { display: block; color: var(--muted); text-decoration: none; padding: .3rem 0; font-weight: 600; }
+  .more a:hover { color: var(--flame); }
+  footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/">Jolly Tiki</a>
+    <a class="back" href="/#notes">← Field Notes</a>
+  </header>
+<article>
+  <div class="eyebrow">Field Notes · Geodesy</div>
+  <h1>Grid to ground, step by step</h1>
+  <p class="lede">Take one site from a latitude and longitude to a combined factor, then use it on real distances, bearings, coordinates and areas.</p>
+
+  <p><a href="coordinate-systems.html" style="color:var(--flame)">Coordinate systems without the headache</a> explains <em>why</em> grid and ground distances differ. This note is the how-to. It walks one example site through the <a href="../coords.html" style="color:var(--flame)">State Plane &amp; UTM converter</a> and the arithmetic that comes after it.</p>
+
+  <h2>The example site</h2>
+  <p>A made-up site near downtown Denver, in the Colorado Central zone, worked in US survey feet:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Value</th><th>Number</th></tr>
+    <tr><td>Latitude</td><td class="num">39.7392° N</td></tr>
+    <tr><td>Longitude</td><td class="num">104.9903° W</td></tr>
+    <tr><td>Elevation (orthometric, from the plans)</td><td class="num">5,280 ft</td></tr>
+    <tr><td>Geoid height (assumed for this example)</td><td class="num">−55 ft</td></tr>
+  </table></div>
+  <p>Look up the real geoid height for your own point with NGS's geoid tools. Don't reuse the one here.</p>
+
+  <h2>Step 1: Scale factor and convergence</h2>
+  <p>In the converter:</p>
+  <ol>
+    <li>Pick <strong>State Plane (NAD83)</strong>, zone <strong>Colorado Central</strong>, units <strong>US survey feet</strong>.</li>
+    <li>Choose <strong>Latitude/longitude → grid</strong>.</li>
+    <li>Enter <code>39.7392</code> and <code>-104.9903</code>. If you already have grid coordinates, use <strong>Grid → latitude/longitude</strong> and enter those instead. You get the same factors either way.</li>
+  </ol>
+  <div class="tablewrap"><table>
+    <tr><th>Converter result</th><th>Value</th></tr>
+    <tr><td>Northing</td><td class="num">1,694,535.460</td></tr>
+    <tr><td>Easting</td><td class="num">3,143,339.807</td></tr>
+    <tr><td>Grid scale factor, k</td><td class="num">0.99999788</td></tr>
+    <tr><td>Convergence angle</td><td class="num">0°19'17.26"</td></tr>
+    <tr><td>Grid north is</td><td class="num">east of true north</td></tr>
+  </table></div>
+  <p>The scale factor is almost exactly 1, only 2 parts per million short. That's because Denver sits right on the zone's northern standard parallel, 39°45', where the Lambert projection has no distortion at all. Elsewhere in a zone k is further from 1, but most State Plane zones were designed to stay within 1 part in 10,000.</p>
+
+  <div class="callout"><span class="k">Which way k changes</span><p>In a <strong>Lambert</strong> zone (wide east to west), k depends only on latitude, so it changes as you go north or south. In a <strong>Transverse Mercator</strong> zone (tall north to south), k depends on distance from the central meridian, so it changes as you go east or west. The converter shows which projection your zone uses, and you can always move the point and watch k change.</p></div>
+
+  <h2>Step 2: Elevation factor</h2>
+  <p>The converter works on the ellipsoid, so it doesn't know your elevation. This part you do by hand. First get the <strong>ellipsoid height</strong>:</p>
+  <div class="formula">h = elevation + geoid height
+  = 5,280 + (−55) = 5,225 ft</div>
+  <p>Then the elevation factor, using the earth's mean radius of about 20,906,000 ft:</p>
+  <div class="formula">EF = R / (R + h)
+   = 20,906,000 / (20,906,000 + 5,225)
+   = 0.99975013</div>
+
+  <h2>Step 3: Combined factor</h2>
+  <div class="formula">CF = k × EF
+   = 0.99999788 × 0.99975013
+   = 0.99974802</div>
+  <p>That's about 252 parts per million, or 1 part in 3,969. Here the elevation is doing almost all the work: it's more than 100 times bigger than the projection's own distortion. At a mile up, ignoring it would wreck a 1:10,000 survey on its own.</p>
+
+  <h2>Step 4: Distances</h2>
+  <div class="formula">Grid distance   = Ground distance × CF
+Ground distance = Grid distance ÷ CF</div>
+  <ul>
+    <li>A total station measures <code>1,250.00</code> ft (horizontal, at ground). On the grid that's <code>1,250.00 × 0.99974802 = 1,249.69</code> ft. That's 0.32 ft shorter.</li>
+    <li>A GPS-derived grid inverse of <code>1,000.00</code> ft is <code>1,000.25</code> ft on the ground. Stake it at 1,000.00 and you're a quarter foot short.</li>
+  </ul>
+  <p>The <a href="../inverse.html" style="color:var(--flame)">Inverse</a> tool gives you the grid distance between two State Plane points. Divide it by CF for ground.</p>
+
+  <h2>Step 5: Bearings</h2>
+  <p>A bearing computed from State Plane coordinates is a <strong>grid bearing</strong>. To turn it into a geodetic (true) bearing:</p>
+  <div class="formula">Geodetic azimuth = Grid azimuth + convergence</div>
+  <p>Here that's <code>N 45°00'00" E</code> grid → <code>N 45°19'17" E</code> geodetic. That's a 19-minute difference, far too big to ignore if the deed is on true bearings.</p>
+  <p>Convergence also changes across a site. Two miles east, at the same latitude, the converter gives 0°20'43", almost a minute and a half more. When you rotate to true north, say on the plat <em>where</em> the convergence was computed.</p>
+
+  <h2>Step 6: Coordinates</h2>
+  <p>To give a project ground coordinates, scale every point about one base point:</p>
+  <div class="formula">Ground N = Base N + (Grid N − Base N) ÷ CF
+Ground E = Base E + (Grid E − Base E) ÷ CF</div>
+  <p>A point 2,000 ft north and 1,500 ft east of the base moves another 0.50 ft north and 0.38 ft east. Those shifts grow with distance from the base point, which is why the base point and the factor both have to be on the plat. Then change the numbers enough that nobody can mistake them for State Plane. Subtracting a round number from every northing and easting works.</p>
+
+  <h2>Step 7: Areas</h2>
+  <div class="formula">Ground area = Grid area ÷ CF²</div>
+  <p>A parcel that's 5.0000 acres from grid coordinates is <code>5.0000 ÷ 0.99974802² = 5.0025</code> acres on the ground. That's an extra 110 sq ft, which doesn't sound like much until it's in the legal description. The <a href="../area.html" style="color:var(--flame)">Area by Coordinates</a> tool gives the grid area when you feed it State Plane coordinates.</p>
+
+  <h2>When one factor isn't enough</h2>
+  <p>A single combined factor works for a compact site. It starts to fall apart when:</p>
+  <ul>
+    <li><strong>Elevation varies a lot.</strong> Every 500 ft of elevation change shifts the elevation factor by about 24 ppm. On a site that climbs a ridge, compute a factor for each end of a long line and average them, or use a separate factor for each area.</li>
+    <li><strong>The site is long in the direction k changes.</strong> That's north–south in a Lambert zone, or east–west in a Transverse Mercator zone. Run the converter at both ends. If k changes by more than a few ppm, use the average for each line.</li>
+    <li><strong>You need better than about 1:50,000.</strong> At that level, compute grid-to-ground line by line rather than with one project factor.</li>
+  </ul>
+
+  <div class="callout"><span class="k">On the plat</span><p>Zone, datum and epoch, units (which foot), grid or ground. If you scaled, add the combined factor, how you got it (k, elevation and geoid height used), and the base point. If you rotated, give the convergence and the point it was computed at.</p></div>
+</article>
+  <div class="more">
+    <h2>More field notes</h2>
+    <a href="coordinate-systems.html">Coordinate systems without the headache →</a> <a href="civil3d-survey-figures.html">Civil 3D survey figure tips →</a> <a href="old-surveys.html">How they surveyed it back then →</a>
+  </div>
+  <footer>© <span id="yr"></span> jollytiki.com · General information, not legal or professional advice. Check your state's rules and your own work.</footer>
+</div>
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+<script data-goatcounter="https://jollytiki.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
