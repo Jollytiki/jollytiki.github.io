@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>State Plane &amp; UTM Converter — Grid to Latitude/Longitude | Jolly Tiki</title>
+<meta name="description" content="Free coordinate converter for surveyors: NAD83 State Plane (all zones) and UTM to latitude and longitude and back, in US survey feet, international feet or meters, with the grid scale factor and convergence angle.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e; --deep: #071a1d; --panel: #12363b; --line: #1f4b51;
+    --sand: #f4e3c1; --muted: #a9bfb9; --torch: #ff8a3d; --flame: #ffc94a;
+    --hibiscus: #e8475c; --leaf: #2f8f6b; --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #071a1d; }
+  body { font-family: "Karla", system-ui, sans-serif; color: var(--sand); line-height: 1.5;
+    background: radial-gradient(ellipse at 50% -10%, #1d4f55, transparent 55%), linear-gradient(180deg, var(--night), var(--deep) 70%);
+    background-attachment: fixed; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(244,227,193,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,227,193,.035) 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .wrap { position: relative; max-width: 900px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; }
+  .brand { color: var(--flame); font-family: "Bungee", Impact, sans-serif; font-size: 1.2rem; text-decoration: none; }
+  header a.back { color: var(--muted); text-decoration: none; font-weight: 600; }
+  header a.back:hover { color: var(--flame); }
+  h1 { font-family: "Bungee", Impact, sans-serif; color: var(--flame); font-size: clamp(1.8rem, 5vw, 2.6rem);
+       text-shadow: 0 3px 0 var(--wood-dark); margin: 1rem 0 .3rem; }
+  .lede { color: var(--muted); margin-bottom: 1.5rem; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  .panel h2 { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .6rem; font-weight: 700; }
+  label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: .2rem; }
+  label b { color: var(--sand); font-family: "JetBrains Mono", monospace; }
+  input, select { width: 100%; padding: .6rem .7rem; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--deep); color: var(--sand); font-family: "JetBrains Mono", monospace; font-size: 1rem; }
+  input:focus, select:focus { outline: 2px solid var(--torch); outline-offset: 1px; }
+  input.given { border-color: var(--flame); }
+  input.bad { border-color: var(--hibiscus); }
+  button { cursor: pointer; padding: .55rem 1rem; border-radius: 999px; border: 1px solid var(--line); background: transparent;
+    color: var(--sand); font-family: inherit; font-weight: 600; }
+  button:hover { border-color: var(--torch); color: var(--flame); }
+  .fields { display: grid; gap: .7rem 1rem; margin-bottom: 1rem; }
+  .opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding-top: 1rem; border-top: 1px dashed var(--line); margin-bottom: .9rem; }
+  .actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+  .copied { color: var(--leaf); font-weight: 600; align-self: center; opacity: 0; transition: opacity .2s; }
+  .err { color: var(--hibiscus); font-weight: 600; margin-top: .8rem; display: none; }
+  .warn { color: var(--torch); font-weight: 600; margin-top: .6rem; display: none; }
+  .info { color: var(--muted); margin-top: .8rem; }
+  .results { margin-top: 1.25rem; display: grid; grid-template-columns: 1.1fr 1fr; gap: 1rem; }
+  .big { background: var(--deep); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  .big .k { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .3rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td { padding: .4rem .2rem; border-bottom: 1px solid var(--line); }
+  td:first-child { color: var(--muted); }
+  td:first-child b { color: var(--sand); font-family: "JetBrains Mono", monospace; margin-right: .35rem; }
+  td:last-child { text-align: right; font-family: "JetBrains Mono", monospace; cursor: pointer; white-space: nowrap; }
+  td:last-child:hover { color: var(--flame); }
+  td .tag { font-family: "Karla", sans-serif; font-size: .7rem; color: var(--flame); border: 1px solid var(--flame); border-radius: 999px; padding: 0 .4rem; margin-right: .4rem; vertical-align: 1px; }
+  tr.sep td { border-bottom: 1px dashed var(--line); padding: .15rem; }
+  svg.diag { width: 100%; height: auto; display: block; }
+  svg.diag text { font-family: "JetBrains Mono", monospace; font-size: 13px; fill: var(--sand); }
+  .how { margin-top: 2rem; color: var(--muted); }
+  .how h2 { font-family: "Bungee", Impact, sans-serif; color: var(--sand); font-size: 1.15rem; margin-bottom: .5rem; }
+  .how p { margin-bottom: .6rem; }
+  .how code { font-family: "JetBrains Mono", monospace; color: var(--sand); background: var(--deep); padding: .05rem .35rem; border-radius: 4px; }
+  .how a { color: var(--flame); }
+  footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+  .tabs { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .tabs button[aria-pressed="true"] { background: var(--flame); color: var(--deep); border-color: var(--flame); }
+  .fields.sys { grid-template-columns: 1.6fr 1fr; }
+  .fields.utm { grid-template-columns: 1fr 1fr auto; align-items: end; display: none; }
+  .fields.io { grid-template-columns: 1fr 1fr; }
+  .io-geo { display: none; }
+  @media (max-width: 680px) { .fields.sys, .fields.io, .results { grid-template-columns: 1fr; } }
+</style>
+<script src="js/spcs-zones.js"></script></head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/">Jolly Tiki</a>
+    <a class="back" href="/">← All tools</a>
+  </header>
+
+  <h1>State Plane &amp; UTM</h1>
+  <p class="lede">Convert between grid coordinates and latitude and longitude. Covers every NAD83 State Plane zone and UTM. Click any result to copy it.</p>
+
+  <div class="panel">
+    <div class="tabs" role="group" aria-label="Coordinate system">
+      <button type="button" data-s="spcs" aria-pressed="true">State Plane (NAD83)</button>
+      <button type="button" data-s="utm" aria-pressed="false">UTM</button>
+    </div>
+    <div class="fields sys" id="spcsFields">
+      <div><label for="zone">Zone</label><select id="zone"></select></div>
+      <div>
+        <label for="unit">Grid units</label>
+        <select id="unit">
+          <option value="usft" selected>US survey feet</option>
+          <option value="ift">International feet</option>
+          <option value="m">Meters</option>
+        </select>
+      </div>
+    </div>
+    <div class="fields utm" id="utmFields">
+      <div><label for="uzone">UTM zone</label><select id="uzone"></select></div>
+      <div><label for="hemi">Hemisphere</label><select id="hemi"><option value="N" selected>North</option><option value="S">South</option></select></div>
+      <div><button id="autoZone" type="button" title="Pick the zone from the longitude">Zone from longitude</button></div>
+    </div>
+    <h2>Convert</h2>
+    <div class="tabs" role="group" aria-label="Direction">
+      <button type="button" data-d="grid" aria-pressed="true">Grid → latitude/longitude</button>
+      <button type="button" data-d="geo" aria-pressed="false">Latitude/longitude → grid</button>
+    </div>
+    <div class="fields io io-grid">
+      <div><label for="gn">Northing</label><input id="gn" inputmode="decimal" autocomplete="off"></div>
+      <div><label for="ge">Easting</label><input id="ge" inputmode="decimal" autocomplete="off"></div>
+    </div>
+    <div class="fields io io-geo">
+      <div><label for="lat">Latitude</label><input id="lat" spellcheck="false" autocomplete="off" placeholder="39 17 26.5 N  or  39.290694"></div>
+      <div><label for="lon">Longitude</label><input id="lon" spellcheck="false" autocomplete="off" placeholder="76 36 43.2 W  or  -76.612"></div>
+    </div>
+    <div class="actions">
+      <button id="copy" type="button">Copy all</button>
+      <button id="example" type="button">Example</button>
+      <button id="clear" type="button">Clear</button>
+      <span class="copied" id="copied">Copied!</span>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="warn" id="warn"></div>
+  </div>
+
+  <div class="results">
+    <div class="big"><div class="k">Grid</div><table id="outGrid"></table></div>
+    <div class="big"><div class="k">Geographic (NAD83)</div><table id="outGeo"></table></div>
+  </div>
+
+  <div class="how">
+    <h2>How it works</h2>
+    <p><b>State Plane</b> zones use Lambert Conformal Conic or Transverse Mercator, with the parameters for all 122 NAD83 zones taken from the EPSG database. Every zone is tested to within a millimeter of PROJ. Alaska zone 1 uses an Oblique Mercator projection, which isn't supported, so it's listed but can't be picked.</p>
+    <p><b>Units matter.</b> Most states defined their zones in US survey feet (1200/3937 m). A few, including Arizona, Michigan, Montana, Oregon and South Carolina, used the international foot (0.3048 m). The two differ by 2 parts per million, which is several feet at state plane values in the millions. The US survey foot was officially retired at the end of 2022, but most existing state plane coordinates still use it.</p>
+    <p><b>Datum.</b> Everything here is on the GRS80 ellipsoid, which NAD83 uses. This converts between grid and geographic coordinates on the same datum. It doesn't shift between datums (NAD83 to WGS84, or NAD27), which can move a point a meter or more.</p>
+    <p>The <b>grid scale factor</b> is grid distance divided by ellipsoid distance at the point. The <b>convergence angle</b> is the angle between grid north and true north. Geodetic azimuth = grid azimuth + convergence.</p>
+    <p>Latitude and longitude can be decimal degrees or DMS, with a sign or a letter: <code>-76.612</code>, <code>76 36 43.2 W</code>, <code>76°36'43.2"W</code>.</p>
+  </div>
+
+  <footer>© <span id="yr"></span> jollytiki.com · Provided as-is. Check your work before it goes on a plat.</footer>
+</div>
+
+<script>
+// ===== MATH START =====
+function toNum(s) {
+  if (typeof s === 'number') return s;
+  const t = String(s).replace(/,/g, '').trim();
+  if (t === '' || !/^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(t)) return NaN;
+  return parseFloat(t);
+}
+// Decimal degrees -> D°MM'SS" with carry-safe rounding
+function dms(deg, secDp) {
+  secDp = secDp || 0;
+  const f = Math.pow(10, secDp);
+  let totalSec = Math.round(deg * 3600 * f) / f;
+  let d = Math.floor(totalSec / 3600 + 1e-12);
+  let rem = totalSec - d * 3600;
+  let m = Math.floor(rem / 60 + 1e-12);
+  let s = rem - m * 60;
+  if (s < 0) s = 0;
+  const sStr = s.toFixed(secDp);
+  const sPad = secDp ? sStr.padStart(3 + secDp, '0') : sStr.padStart(2, '0');
+  return d + '°' + String(m).padStart(2, '0') + "'" + sPad + '"';
+}
+function normAz(a) { a = a % 360; if (a < 0) a += 360; return a; }
+// Round an azimuth to display precision (in seconds) and keep it in [0, 360)
+function roundAz(az, secDp) {
+  const f = Math.pow(10, secDp || 0);
+  return normAz(Math.round(az * 3600 * f) / (3600 * f));
+}
+function azDms(az, secDp) { return dms(roundAz(az, secDp), secDp); }
+function bearingFromAz(az, secDp) {
+  // Round first, so 89°59'59.9" displays as N 90°00'00" E instead of landing in the wrong quadrant
+  az = roundAz(az, secDp);
+  let ns, ew, ang;
+  if (az <= 90)       { ns = 'N'; ew = 'E'; ang = az; }
+  else if (az <= 180) { ns = 'S'; ew = 'E'; ang = 180 - az; }
+  else if (az <= 270) { ns = 'S'; ew = 'W'; ang = az - 180; }
+  else                { ns = 'N'; ew = 'W'; ang = 360 - az; }
+  return ns + ' ' + dms(ang, secDp) + ' ' + ew;
+}
+// Signed DMS (dms() handles non-negative values only)
+function sdms(deg, secDp) { return (deg < 0 ? '−' : '') + dms(Math.abs(deg), secDp); }
+// DD.MMSS calculator format, e.g. 45°30'15" -> 45.3015
+function packed(deg, secDp) {
+  secDp = secDp || 0;
+  const f = Math.pow(10, secDp);
+  const neg = deg < 0;
+  const tot = Math.round(Math.abs(deg) * 3600 * f);   // integer units of 1/f seconds
+  const d = Math.floor(tot / (3600 * f));
+  const m = Math.floor((tot - d * 3600 * f) / (60 * f));
+  const sUnits = tot - d * 3600 * f - m * 60 * f;
+  const sWhole = Math.floor(sUnits / f), sFrac = sUnits - sWhole * f;
+  let out = d + '.' + String(m).padStart(2, '0') + String(sWhole).padStart(2, '0');
+  if (secDp) out += String(sFrac).padStart(secDp, '0');
+  return (neg ? '−' : '') + out;
+}
+// Parse DD.MMSS string -> decimal degrees. Returns {deg, warn} or null
+function parsePacked(t) {
+  const m = /^([-+]?)(\d*)(?:\.(\d*))?$/.exec(t);
+  if (!m || (m[2] === '' && !m[3])) return null;
+  const frac = (m[3] || '').padEnd(4, '0');
+  const d = Number(m[2] || 0), mm = Number(frac.slice(0, 2));
+  const ss = Number(frac.slice(2, 4) + '.' + (frac.slice(4) || '0'));
+  const warn = (mm >= 60 || ss >= 60) ? 'Minutes and seconds should be under 60 in DD.MMSS format. Did you mean decimal degrees?' : '';
+  const v = d + mm / 60 + ss / 3600;
+  return { deg: m[1] === '-' ? -v : v, warn };
+}
+// Parse DMS with any separators. Returns {deg, warn} or null
+function parseDms(t) {
+  let sign = 1;
+  t = t.trim();
+  if (/^[-−]/.test(t)) { sign = -1; t = t.slice(1).trim(); }
+  else if (t[0] === '+') t = t.slice(1).trim();
+  const parts = t.split(/\s*(?:°|º|˚|d|deg|'|’|′|m|min|"|”|″|''|s|sec|:|-|\s)+\s*/i).filter(p => p !== '');
+  if (parts.length < 1 || parts.length > 3) return null;
+  if (!parts.every(p => /^(\d+\.?\d*|\.\d+)$/.test(p))) return null;
+  const [d, m = 0, s = 0] = parts.map(Number);
+  let warn = '';
+  if (m >= 60 || s >= 60) warn = 'Minutes and seconds are normally under 60. Check the value you typed.';
+  if (parts.length > 1 && !Number.isInteger(d)) warn = 'Degrees has decimals and minutes too. Check the value you typed.';
+  return { deg: sign * (d + m / 60 + s / 3600), warn };
+}
+// Main parser. mode: how to read a plain number (dd | dms | rad | gon)
+function parseAngle(input, mode) {
+  let t = String(input).trim().replace(/,/g, '');
+  if (t === '') return { empty: true };
+  let bearing = null;
+  const b = /^([NS])\s*(.+?)\s*([EW])$/i.exec(t);
+  if (b) { bearing = { ns: b[1].toUpperCase(), ew: b[3].toUpperCase() }; t = b[2]; }
+  let r, kind;
+  if (/^[-+−]?(\d+\.?\d*|\.\d+)$/.test(t)) {
+    const n = Number(t.replace('−', '-'));
+    if (mode === 'dms') { r = parsePacked(t.replace('−', '-')); kind = 'DD.MMSS'; }
+    else if (mode === 'rad') { r = { deg: n * 180 / Math.PI, warn: '' }; kind = 'radians'; }
+    else if (mode === 'gon') { r = { deg: n * 0.9, warn: '' }; kind = 'gons'; }
+    else { r = { deg: n, warn: '' }; kind = 'decimal degrees'; }
+  } else {
+    r = parseDms(t); kind = 'degrees-minutes-seconds';
+  }
+  if (!r || !isFinite(r.deg)) return { error: "Couldn't read that. Try 45°30'15\", 45 30 15, 45.5 or N 45-30-15 E." };
+  if (bearing) {
+    if (r.deg < 0 || r.deg > 90) return { error: 'A bearing angle has to be between 0° and 90°.' };
+    const a = r.deg;
+    const az = bearing.ns === 'N' ? (bearing.ew === 'E' ? a : 360 - a) : (bearing.ew === 'E' ? 180 - a : 180 + a);
+    return { deg: a, az: normAz(az), kind: 'bearing in ' + kind, warn: r.warn };
+  }
+  return { deg: r.deg, kind, warn: r.warn };
+}
+// deg: the angle to show in DMS/decimal. azIn: direction for bearings (defaults to deg read as an azimuth)
+function convert(deg, secDp, azIn) {
+  const az = roundAz(azIn === undefined ? deg : azIn, secDp);
+  const baz = normAz(az + 180);
+  const dmin = Math.abs(deg) * 60, dd = Math.floor(Math.abs(deg) + 1e-12);
+  return {
+    dms: sdms(deg, secDp),
+    dd: (deg < 0 ? '−' : '') + Math.abs(deg).toFixed(8).replace(/0+$/, '').replace(/\.$/, '') + '°',
+    pk: packed(deg, secDp),
+    az: dms(az, secDp),
+    brg: bearingFromAz(az, secDp),
+    baz: dms(baz, secDp),
+    bb: bearingFromAz(baz, secDp),
+    rad: (deg * Math.PI / 180).toFixed(10),
+    gon: (deg / 0.9).toFixed(6) + ' gon',
+    dm: (deg < 0 ? '−' : '') + dd + '°' + (dmin - dd * 60).toFixed(4).padStart(7, '0') + "'",
+    azDeg: az
+  };
+}
+// ===== MATH END =====
+// ===== SHARED HELPERS =====
+const RAD = Math.PI / 180;
+function fmtLen(v, dp) {
+  return isFinite(v) ? v.toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp }) : '—';
+}
+function fmtNE(v, dp) { return isFinite(v) ? v.toFixed(dp) : '—'; }
+// Read a direction: a quadrant bearing, or a plain angle taken as an azimuth from north
+function readDir(text, mode) {
+  const p = parseAngle(text, mode);
+  if (p.empty || p.error) return p;
+  return { az: p.az !== undefined ? p.az : normAz(p.deg), warn: p.warn, bearing: p.az !== undefined };
+}
+// undefined = blank, NaN = not a number
+function readNum(text) {
+  const t = String(text).trim();
+  return t === '' ? undefined : toNum(t);
+}
+// Inverse between two N/E points
+function inverse(n1, e1, n2, e2) {
+  const dn = n2 - n1, de = e2 - e1;
+  return { dist: Math.hypot(dn, de), az: normAz(Math.atan2(de, dn) / RAD) };
+}
+// "12+34.56" or "1234.56" -> 1234.56
+function parseStation(t) {
+  t = String(t).replace(/,/g, '').trim();
+  if (t === '') return undefined;
+  const m = /^([-+]?)(\d+)\s*\+\s*(\d+(?:\.\d*)?)$/.exec(t);
+  if (m) { const v = Number(m[2]) * 100 + Number(m[3]); return m[1] === '-' ? -v : v; }
+  const n = toNum(t);
+  return isFinite(n) ? n : NaN;
+}
+function fmtStation(v, dp) {
+  const neg = v < 0, f = Math.pow(10, dp);
+  const u = Math.round(Math.abs(v) * f);
+  const hund = Math.floor(u / (100 * f)), rest = (u - hund * 100 * f) / f;
+  return (neg ? '−' : '') + hund + '+' + rest.toFixed(dp).padStart(3 + dp, '0');
+}
+// Fit N/E points into a W×H box, north up, equal scale. Returns p => [x, y]
+function fitter(pts, W, H, pad) {
+  const ns = pts.map(p => p[0]), es = pts.map(p => p[1]);
+  const n0 = Math.min(...ns), n1 = Math.max(...ns), e0 = Math.min(...es), e1 = Math.max(...es);
+  const s = Math.min((W - 2 * pad) / ((e1 - e0) || 1), (H - 2 * pad) / ((n1 - n0) || 1));
+  const cx = (e0 + e1) / 2, cy = (n0 + n1) / 2;
+  return p => [W / 2 + (p[1] - cx) * s, H / 2 - (p[0] - cy) * s];
+}
+const svgEsc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+function svgLine(a, b, st) { return '<line x1="' + a[0].toFixed(1) + '" y1="' + a[1].toFixed(1) + '" x2="' + b[0].toFixed(1) + '" y2="' + b[1].toFixed(1) + '" ' + st + '/>'; }
+function svgDot(a, r, fill) { return '<circle cx="' + a[0].toFixed(1) + '" cy="' + a[1].toFixed(1) + '" r="' + r + '" fill="' + fill + '"/>'; }
+function svgText(a, t, dx, dy, st, anchor) { return '<text x="' + (a[0] + dx).toFixed(1) + '" y="' + (a[1] + dy).toFixed(1) + '" text-anchor="' + (anchor || 'middle') + '" ' + (st || '') + '>' + svgEsc(t) + '</text>'; }
+// Result rows: [label, value, given?] -> table HTML. A null row is a separator.
+function tableRows(rows) {
+  return rows.map(r => r === null ? '<tr class="sep"><td></td><td></td></tr>'
+    : '<tr><td>' + r[0] + '</td><td>' + (r[2] ? '<span class="tag">given</span>' : '') + '<span>' + svgEsc(r[1]) + '</span></td></tr>').join('');
+}
+function rowsText(rows) { return rows.filter(r => r).map(r => r[0].replace(/<[^>]+>/g, '') + ': ' + r[1]).join('\n'); }
+// Click a result to copy it; the Copy all button copies getText()
+function setupCopy(getText) {
+  const flash = () => { const c = document.getElementById('copied'); c.style.opacity = 1; setTimeout(() => c.style.opacity = 0, 1500); };
+  const copy = async t => { try { await navigator.clipboard.writeText(t); flash(); } catch (e) {} };
+  document.addEventListener('click', e => {
+    const td = e.target.closest('.big td:not(:first-child)'); if (!td) return;
+    const span = td.querySelector('span:last-child'); const v = span ? span.textContent : td.textContent;
+    if (v && v !== '—') copy(v);
+  });
+  const btn = document.getElementById('copy');
+  if (btn) btn.onclick = () => { const t = getText(); if (t) copy(t); };
+}
+function showMsg(id, msg) { const el = document.getElementById(id); el.textContent = msg || ''; el.style.display = msg ? 'block' : 'none'; }
+// ===== SHARED HELPERS END =====
+
+// Projection code ported from survey-app-tauri: Spcs (src/js/spcs.js) and the Transverse Mercator
+// series in SurveyMath (src/js/math.js). Everything here works in meters on GRS80.
+const GRS80 = { a: 6378137.0, f: 1 / 298.257222101 };
+const UNIT = { usft: 1200 / 3937, ift: 0.3048, m: 1 };
+function tmToLatLon(N, E, lat0, lon0, k0, fe, fn) {
+  const a = GRS80.a, f = GRS80.f, eSq = 2 * f - f * f, ePrimeSq = eSq / (1 - eSq);
+  const phi0 = lat0 * RAD, lam0 = lon0 * RAD;
+  const c1 = 1 - eSq / 4 - 3 * eSq * eSq / 64 - 5 * Math.pow(eSq, 3) / 256;
+  const c2 = 3 * eSq / 8 + 3 * eSq * eSq / 32 + 45 * Math.pow(eSq, 3) / 1024;
+  const c3 = 15 * eSq * eSq / 256 + 45 * Math.pow(eSq, 3) / 1024;
+  const c4 = 35 * Math.pow(eSq, 3) / 3072;
+  const M0 = a * (c1 * phi0 - c2 * Math.sin(2 * phi0) + c3 * Math.sin(4 * phi0) - c4 * Math.sin(6 * phi0));
+  const M = M0 + (N - fn) / k0;
+  const mu = M / (a * c1);
+  const e1 = (1 - Math.sqrt(1 - eSq)) / (1 + Math.sqrt(1 - eSq));
+  const phi1 = mu + (3 * e1 / 2 - 27 * Math.pow(e1, 3) / 32) * Math.sin(2 * mu)
+    + (21 * e1 * e1 / 16 - 55 * Math.pow(e1, 4) / 32) * Math.sin(4 * mu)
+    + (151 * Math.pow(e1, 3) / 96) * Math.sin(6 * mu)
+    + (1097 * Math.pow(e1, 4) / 512) * Math.sin(8 * mu);
+  const s = Math.sin(phi1), c = Math.cos(phi1), t = Math.tan(phi1);
+  const n1 = a / Math.sqrt(1 - eSq * s * s), t1 = t * t, C1 = ePrimeSq * c * c;
+  const r1 = a * (1 - eSq) / Math.pow(1 - eSq * s * s, 1.5);
+  const d = (E - fe) / (n1 * k0);
+  const lat = phi1 - (n1 * t / r1) * (d * d / 2 - (5 + 3 * t1 + 10 * C1 - 4 * C1 * C1 - 9 * ePrimeSq) * Math.pow(d, 4) / 24
+    + (61 + 90 * t1 + 298 * C1 + 45 * t1 * t1 - 252 * ePrimeSq - 3 * C1 * C1) * Math.pow(d, 6) / 720);
+  const lon = (d - (1 + 2 * t1 + C1) * Math.pow(d, 3) / 6 + (5 - 2 * C1 + 28 * t1 - 3 * C1 * C1 + 8 * ePrimeSq + 24 * t1 * t1) * Math.pow(d, 5) / 120) / c;
+  return { lat: lat / RAD, lon: (lon + lam0) / RAD };
+}
+function latLonToTm(lat, lon, lat0, lon0, k0, fe, fn) {
+  const a = GRS80.a, f = GRS80.f, eSq = 2 * f - f * f, ePrimeSq = eSq / (1 - eSq);
+  const phi = lat * RAD, lam = lon * RAD, phi0 = lat0 * RAD, lam0 = lon0 * RAD;
+  const c1 = 1 - eSq / 4 - 3 * eSq * eSq / 64 - 5 * Math.pow(eSq, 3) / 256;
+  const c2 = 3 * eSq / 8 + 3 * eSq * eSq / 32 + 45 * Math.pow(eSq, 3) / 1024;
+  const c3 = 15 * eSq * eSq / 256 + 45 * Math.pow(eSq, 3) / 1024;
+  const c4 = 35 * Math.pow(eSq, 3) / 3072;
+  const arc = p => a * (c1 * p - c2 * Math.sin(2 * p) + c3 * Math.sin(4 * p) - c4 * Math.sin(6 * p));
+  const s = Math.sin(phi), c = Math.cos(phi), t = Math.tan(phi);
+  const N = a / Math.sqrt(1 - eSq * s * s), T = t * t, C = ePrimeSq * c * c, A = (lam - lam0) * c;
+  const x = k0 * N * (A + (1 - T + C) * Math.pow(A, 3) / 6 + (5 - 18 * T + T * T + 72 * C - 58 * ePrimeSq) * Math.pow(A, 5) / 120);
+  const y = k0 * (arc(phi) - arc(phi0) + N * t * (A * A / 2 + (5 - T + 9 * C + 4 * C * C) * Math.pow(A, 4) / 24 + (61 - 58 * T + T * T + 600 * C - 330 * ePrimeSq) * Math.pow(A, 6) / 720));
+  return { n: y + fn, e: x + fe };
+}
+// Lambert Conformal Conic (2SP), per EPSG guidance note 7-2
+function lccConstants(z) {
+  const a = GRS80.a, e = Math.sqrt(2 * GRS80.f - GRS80.f * GRS80.f);
+  const m = p => Math.cos(p) / Math.sqrt(1 - e * e * Math.sin(p) * Math.sin(p));
+  const t = p => Math.tan(Math.PI / 4 - p / 2) / Math.pow((1 - e * Math.sin(p)) / (1 + e * Math.sin(p)), e / 2);
+  const p0 = z.lat0 * RAD, p1 = z.sp1 * RAD, p2 = z.sp2 * RAD;
+  const n = Math.log(m(p1) / m(p2)) / Math.log(t(p1) / t(p2));
+  const F = m(p1) / (n * Math.pow(t(p1), n));
+  return { a, e, n, F, rho0: a * F * Math.pow(t(p0), n), lam0: z.lon0 * RAD };
+}
+// A projection described like a SPCS_ZONES row. Grid values in meters.
+function gridToGeo(z, N, E) {
+  if (z.method === 'tm') return tmToLatLon(N, E, z.lat0, z.lon0, z.k0, z.fe, z.fn);
+  const { a, e, n, F, rho0, lam0 } = lccConstants(z);
+  const dE = E - z.fe, dN = rho0 - (N - z.fn);
+  let rho = Math.hypot(dE, dN);
+  if (n < 0) rho = -rho;
+  const theta = rho === 0 ? 0 : Math.atan2(dE, dN);
+  const t = Math.pow(rho / (a * F), 1 / n);
+  let lat = Math.PI / 2 - 2 * Math.atan(t);
+  for (let i = 0; i < 8; i++) { const s = Math.sin(lat); lat = Math.PI / 2 - 2 * Math.atan(t * Math.pow((1 - e * s) / (1 + e * s), e / 2)); }
+  return { lat: lat / RAD, lon: (theta / n + lam0) / RAD };
+}
+function geoToGrid(z, lat, lon) {
+  if (z.method === 'tm') return latLonToTm(lat, lon, z.lat0, z.lon0, z.k0, z.fe, z.fn);
+  const { a, e, n, F, rho0, lam0 } = lccConstants(z);
+  const phi = lat * RAD;
+  const t = Math.tan(Math.PI / 4 - phi / 2) / Math.pow((1 - e * Math.sin(phi)) / (1 + e * Math.sin(phi)), e / 2);
+  const rho = a * F * Math.pow(t, n), theta = n * (lon * RAD - lam0);
+  return { n: z.fn + rho0 - rho * Math.cos(theta), e: z.fe + rho * Math.sin(theta) };
+}
+function utmZone(zone, south) {
+  return { method: 'tm', lat0: 0, lon0: -183 + 6 * zone, k0: 0.9996, fe: 500000, fn: south ? 10000000 : 0 };
+}
+// Point scale factor and convergence, by small steps along the meridian and the parallel
+function scaleAndConvergence(z, lat, lon) {
+  const h = 1e-5, a = GRS80.a, eSq = 2 * GRS80.f - GRS80.f * GRS80.f, s = Math.sin(lat * RAD);
+  const Mr = a * (1 - eSq) / Math.pow(1 - eSq * s * s, 1.5), Nr = a / Math.sqrt(1 - eSq * s * s);
+  const pN = geoToGrid(z, lat + h, lon), pS = geoToGrid(z, lat - h, lon);
+  const pE = geoToGrid(z, lat, lon + h), pW = geoToGrid(z, lat, lon - h);
+  const kMer = Math.hypot(pN.n - pS.n, pN.e - pS.e) / (Mr * 2 * h * RAD);
+  const kPar = Math.hypot(pE.n - pW.n, pE.e - pW.e) / (Nr * Math.cos(lat * RAD) * 2 * h * RAD);
+  // Grid azimuth of true north; convergence is the negative of it
+  const gamma = -Math.atan2(pN.e - pS.e, pN.n - pS.n) / RAD;
+  return { k: (kMer + kPar) / 2, gamma };
+}
+// "39 17 26.5 N", "-76.612", "76°36'43.2\"W" -> signed degrees, or {error}
+function parseLatLon(text, isLat) {
+  let t = String(text).trim().toUpperCase();
+  if (t === '') return { empty: true };
+  let sign = 1;
+  const hemi = /^([NSEW])\s*(.*)$/.exec(t) || /^(.*?)\s*([NSEW])$/.exec(t);
+  if (hemi) {
+    const letter = /^[NSEW]$/.test(hemi[1]) ? hemi[1] : hemi[2];
+    t = /^[NSEW]$/.test(hemi[1]) ? hemi[2] : hemi[1];
+    if (isLat && /[EW]/.test(letter)) return { error: 'Latitude takes N or S, not E or W.' };
+    if (!isLat && /[NS]/.test(letter)) return { error: 'Longitude takes E or W, not N or S.' };
+    if (/^[-−]/.test(t.trim())) return { error: 'Use a minus sign or a letter, not both.' };
+    if (letter === 'S' || letter === 'W') sign = -1;
+  }
+  const p = /^[-+−]?(\d+\.?\d*|\.\d+)$/.test(t.trim()) ? { deg: Number(t.trim().replace('−', '-')) } : parseDms(t);
+  if (!p || !isFinite(p.deg)) return { error: 'Couldn\'t read that. Try 39.2907, 39 17 26.5 N or 39°17\'26.5"N.' };
+  const v = sign * p.deg;
+  if (isLat && Math.abs(v) > 90) return { error: 'Latitude has to be between −90° and 90°.' };
+  if (!isLat && Math.abs(v) > 180) return { error: 'Longitude has to be between −180° and 180°.' };
+  return { deg: v, warn: p.warn };
+}
+function fmtLL(v, isLat) {
+  const letter = isLat ? (v < 0 ? 'S' : 'N') : (v < 0 ? 'W' : 'E');
+  return dms(Math.abs(v), 5) + ' ' + letter;
+}
+
+if (typeof document !== 'undefined') {
+  const $ = id => document.getElementById(id);
+  let system = 'spcs', dir = 'grid', lastText = '';
+  const store = { get: k => { try { return localStorage.getItem('jt-coords-' + k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem('jt-coords-' + k, v); } catch (e) {} } };
+
+  // Zone dropdown, grouped by state
+  const zones = Object.values(SPCS_ZONES).sort((a, b) => a.state === b.state ? a.zone.localeCompare(b.zone) : a.state.localeCompare(b.state));
+  let html = '', cur = null;
+  zones.forEach(z => {
+    if (z.state !== cur) { if (cur) html += '</optgroup>'; cur = z.state; html += '<optgroup label="' + svgEsc(cur) + '">'; }
+    html += '<option value="' + z.code + '"' + (z.unsupported ? ' disabled' : '') + '>' + svgEsc(z.zone) + (z.unsupported ? ' (not supported)' : '') + '</option>';
+  });
+  $('zone').innerHTML = html + '</optgroup>';
+  $('zone').value = store.get('zone') || '26985';
+  $('unit').value = store.get('unit') || 'usft';
+  let u = ''; for (let i = 1; i <= 60; i++) u += '<option value="' + i + '">' + i + ' (' + Math.abs(-186 + 6 * i) + '°' + (i < 31 ? 'W' : 'E') + ' to ' + Math.abs(-180 + 6 * i) + '°' + (i < 30 ? 'W' : 'E') + ')</option>';
+  $('uzone').innerHTML = u;
+  $('uzone').value = store.get('uzone') || '18';
+
+  function setTab(group, val) {
+    document.querySelectorAll('[data-' + group + ']').forEach(b => b.setAttribute('aria-pressed', b.dataset[group] === val));
+  }
+  function currentZone() {
+    if (system === 'utm') { const z = Number($('uzone').value); return { proj: utmZone(z, $('hemi').value === 'S'), unit: 1, name: 'UTM zone ' + z + $('hemi').value, unitName: 'm' }; }
+    const z = SPCS_ZONES[$('zone').value];
+    return { proj: z, unit: UNIT[$('unit').value], name: z.zone + ' (EPSG ' + z.code + ')', unitName: { usft: 'US survey ft', ift: 'intl ft', m: 'm' }[$('unit').value] };
+  }
+
+  function calc() {
+    $('spcsFields').style.display = system === 'spcs' ? 'grid' : 'none';
+    $('utmFields').style.display = system === 'utm' ? 'grid' : 'none';
+    document.querySelector('.io-grid').style.display = dir === 'grid' ? 'grid' : 'none';
+    document.querySelector('.io-geo').style.display = dir === 'geo' ? 'grid' : 'none';
+    const Z = currentZone();
+    const errs = [], warns = [];
+    let lat, lon, N, E;
+    if (dir === 'grid') {
+      N = readNum($('gn').value); E = readNum($('ge').value);
+      $('gn').classList.toggle('bad', Number.isNaN(N)); $('ge').classList.toggle('bad', Number.isNaN(E));
+      if (Number.isNaN(N) || Number.isNaN(E)) errs.push('Northing and easting have to be numbers.');
+      if (!errs.length && N !== undefined && E !== undefined) { const g = gridToGeo(Z.proj, N * Z.unit, E * Z.unit); lat = g.lat; lon = g.lon; }
+    } else {
+      const a = parseLatLon($('lat').value, true), b = parseLatLon($('lon').value, false);
+      $('lat').classList.toggle('bad', !!a.error); $('lon').classList.toggle('bad', !!b.error);
+      if (a.error) errs.push('Latitude: ' + a.error); if (b.error) errs.push('Longitude: ' + b.error);
+      if (a.warn || b.warn) warns.push(a.warn || b.warn);
+      if (!errs.length && !a.empty && !b.empty) {
+        lat = a.deg; lon = b.deg;
+        if (system === 'spcs' && lon > 0) warns.push('That longitude is east of Greenwich. US longitudes are negative or end in W.');
+        const g = geoToGrid(Z.proj, lat, lon); N = g.n / Z.unit; E = g.e / Z.unit;
+      }
+    }
+    showMsg('err', errs[0]);
+    lastText = '';
+    if (lat === undefined || !isFinite(lat) || !isFinite(lon) || !isFinite(N) || !isFinite(E)) {
+      $('outGrid').innerHTML = ''; $('outGeo').innerHTML = ''; showMsg('warn', warns[0]);
+      if (!errs.length && lat !== undefined) showMsg('err', 'That point is too far outside the zone to convert.');
+      return;
+    }
+    // How far from the zone's center of longitude, as a sanity check
+    const dLon = Math.abs(((lon - Z.proj.lon0 + 540) % 360) - 180);
+    if (system === 'utm' && dLon > 3.5) warns.push('That point is ' + dLon.toFixed(1) + '° from the zone\'s central meridian, outside the zone. Try "Zone from longitude".');
+    if (system === 'spcs' && dLon > 6) warns.push('That point looks well outside this zone. Check the zone and the coordinates.');
+    showMsg('warn', warns[0]);
+    const sc = scaleAndConvergence(Z.proj, lat, lon);
+    const dp = 3;
+    const gamma = sc.gamma;
+    const gridRows = [
+      ['Northing', N.toFixed(dp), dir === 'grid'], ['Easting', E.toFixed(dp), dir === 'grid'],
+      ['Units', Z.unitName], ['Zone', Z.name], null,
+      ['Grid scale factor', sc.k.toFixed(8)],
+      ['Convergence angle', (gamma < 0 ? '−' : '') + dms(Math.abs(gamma), 2)],
+      ['Grid north is', Math.abs(gamma) < 1e-9 ? 'on true north' : (gamma > 0 ? 'east' : 'west') + ' of true north']
+    ];
+    const geoRows = [
+      ['Latitude', fmtLL(lat, true), dir === 'geo'], ['Longitude', fmtLL(lon, false), dir === 'geo'], null,
+      ['Latitude (decimal)', lat.toFixed(9)], ['Longitude (decimal)', lon.toFixed(9)],
+      ['Lat, lon', lat.toFixed(7) + ', ' + lon.toFixed(7)]
+    ];
+    $('outGrid').innerHTML = tableRows(gridRows);
+    $('outGeo').innerHTML = tableRows(geoRows);
+    lastText = rowsText(gridRows) + '\n' + rowsText(geoRows);
+  }
+
+  document.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { system = b.dataset.s; setTab('s', system); calc(); });
+  document.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { dir = b.dataset.d; setTab('d', dir); calc(); });
+  ['zone', 'unit', 'uzone'].forEach(id => $(id).addEventListener('input', () => { store.set(id, $(id).value); calc(); }));
+  document.querySelectorAll('.panel input, #hemi').forEach(el => el.addEventListener('input', calc));
+  $('autoZone').onclick = () => {
+    const b = parseLatLon($('lon').value, false), a = parseLatLon($('lat').value, true);
+    let lon = b.deg, lat = a.deg;
+    if (dir === 'grid' || lon === undefined) { showMsg('warn', 'Switch to latitude/longitude → grid and enter a longitude first.'); return; }
+    const z = Math.min(60, Math.floor((lon + 180) / 6) + 1);
+    $('uzone').value = String(z); store.set('uzone', String(z));
+    if (lat !== undefined) $('hemi').value = lat < 0 ? 'S' : 'N';
+    calc();
+  };
+  setupCopy(() => lastText);
+  $('clear').onclick = () => { ['gn', 'ge', 'lat', 'lon'].forEach(id => $(id).value = ''); calc(); };
+  $('example').onclick = () => {
+    if (dir === 'grid') {
+      if (system === 'spcs') { $('zone').value = '26985'; $('unit').value = 'usft'; $('gn').value = '596789.125'; $('ge').value = '1432598.780'; }
+      else { $('uzone').value = '18'; $('hemi').value = 'N'; $('gn').value = '4349712.540'; $('ge').value = '360874.210'; }
+    } else { $('lat').value = '39 17 26.512 N'; $('lon').value = '76 36 43.208 W'; if (system === 'utm') { $('uzone').value = '18'; $('hemi').value = 'N'; } }
+    calc();
+  };
+  $('example').onclick();
+}
+
+if (typeof document !== 'undefined') document.getElementById('yr').textContent = new Date().getFullYear();
+</script>
+<script data-goatcounter="https://jollytiki.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spiral Curve Calculator — Spiral-Curve-Spiral Elements &amp; Stations | Jolly Tiki</title>
+<meta name="description" content="Free spiral curve calculator for surveyors: spiral-curve-spiral elements (θs, p, k, X, Y, LT, ST, tangent and external) with TS, SC, CS and ST stations and tangent bearings. Handles unequal spirals.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e; --deep: #071a1d; --panel: #12363b; --line: #1f4b51;
+    --sand: #f4e3c1; --muted: #a9bfb9; --torch: #ff8a3d; --flame: #ffc94a;
+    --hibiscus: #e8475c; --leaf: #2f8f6b; --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #071a1d; }
+  body { font-family: "Karla", system-ui, sans-serif; color: var(--sand); line-height: 1.5;
+    background: radial-gradient(ellipse at 50% -10%, #1d4f55, transparent 55%), linear-gradient(180deg, var(--night), var(--deep) 70%);
+    background-attachment: fixed; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(244,227,193,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,227,193,.035) 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .wrap { position: relative; max-width: 900px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; }
+  .brand { color: var(--flame); font-family: "Bungee", Impact, sans-serif; font-size: 1.2rem; text-decoration: none; }
+  header a.back { color: var(--muted); text-decoration: none; font-weight: 600; }
+  header a.back:hover { color: var(--flame); }
+  h1 { font-family: "Bungee", Impact, sans-serif; color: var(--flame); font-size: clamp(1.8rem, 5vw, 2.6rem);
+       text-shadow: 0 3px 0 var(--wood-dark); margin: 1rem 0 .3rem; }
+  .lede { color: var(--muted); margin-bottom: 1.5rem; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  .panel h2 { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .6rem; font-weight: 700; }
+  label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: .2rem; }
+  label b { color: var(--sand); font-family: "JetBrains Mono", monospace; }
+  input, select { width: 100%; padding: .6rem .7rem; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--deep); color: var(--sand); font-family: "JetBrains Mono", monospace; font-size: 1rem; }
+  input:focus, select:focus { outline: 2px solid var(--torch); outline-offset: 1px; }
+  input.given { border-color: var(--flame); }
+  input.bad { border-color: var(--hibiscus); }
+  button { cursor: pointer; padding: .55rem 1rem; border-radius: 999px; border: 1px solid var(--line); background: transparent;
+    color: var(--sand); font-family: inherit; font-weight: 600; }
+  button:hover { border-color: var(--torch); color: var(--flame); }
+  .fields { display: grid; gap: .7rem 1rem; margin-bottom: 1rem; }
+  .opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding-top: 1rem; border-top: 1px dashed var(--line); margin-bottom: .9rem; }
+  .actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+  .copied { color: var(--leaf); font-weight: 600; align-self: center; opacity: 0; transition: opacity .2s; }
+  .err { color: var(--hibiscus); font-weight: 600; margin-top: .8rem; display: none; }
+  .warn { color: var(--torch); font-weight: 600; margin-top: .6rem; display: none; }
+  .info { color: var(--muted); margin-top: .8rem; }
+  .results { margin-top: 1.25rem; display: grid; grid-template-columns: 1.1fr 1fr; gap: 1rem; }
+  .big { background: var(--deep); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  .big .k { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .3rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td { padding: .4rem .2rem; border-bottom: 1px solid var(--line); }
+  td:first-child { color: var(--muted); }
+  td:first-child b { color: var(--sand); font-family: "JetBrains Mono", monospace; margin-right: .35rem; }
+  td:last-child { text-align: right; font-family: "JetBrains Mono", monospace; cursor: pointer; white-space: nowrap; }
+  td:last-child:hover { color: var(--flame); }
+  td .tag { font-family: "Karla", sans-serif; font-size: .7rem; color: var(--flame); border: 1px solid var(--flame); border-radius: 999px; padding: 0 .4rem; margin-right: .4rem; vertical-align: 1px; }
+  tr.sep td { border-bottom: 1px dashed var(--line); padding: .15rem; }
+  svg.diag { width: 100%; height: auto; display: block; }
+  svg.diag text { font-family: "JetBrains Mono", monospace; font-size: 13px; fill: var(--sand); }
+  .how { margin-top: 2rem; color: var(--muted); }
+  .how h2 { font-family: "Bungee", Impact, sans-serif; color: var(--sand); font-size: 1.15rem; margin-bottom: .5rem; }
+  .how p { margin-bottom: .6rem; }
+  .how code { font-family: "JetBrains Mono", monospace; color: var(--sand); background: var(--deep); padding: .05rem .35rem; border-radius: 4px; }
+  .how a { color: var(--flame); }
+  footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+  .fields.sp { grid-template-columns: repeat(5, 1fr); }
+  .fields.extra { grid-template-columns: 1fr 1.4fr 1.4fr .9fr; }
+  table.two td:nth-child(2), table.two td:nth-child(3) { text-align: right; font-family: "JetBrains Mono", monospace; cursor: pointer; }
+  table.two th { text-align: right; color: var(--muted); font-weight: 600; font-size: .78rem; padding: .3rem .2rem; border-bottom: 1px solid var(--line); }
+  table.two th:first-child { text-align: left; }
+  .stack { display: grid; gap: 1rem; }
+  @media (max-width: 760px) { .fields.sp, .fields.extra { grid-template-columns: 1fr 1fr; } .results, .opts { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/">Jolly Tiki</a>
+    <a class="back" href="/">← All tools</a>
+  </header>
+
+  <h1>Spiral Curve</h1>
+  <p class="lede">Spiral – circular curve – spiral transition, with equal or unequal spirals. Enter the radius, the spiral lengths and either the total Δ or the circular arc length. Click any result to copy it.</p>
+
+  <div class="panel">
+    <h2>Curve</h2>
+    <div class="fields sp">
+      <div><label for="R"><b>R</b> Radius</label><input id="R" inputmode="decimal" autocomplete="off"></div>
+      <div><label for="ls1"><b>Ls</b> Entry spiral length</label><input id="ls1" inputmode="decimal" autocomplete="off"></div>
+      <div><label for="ls2"><b>Ls</b> Exit spiral length</label><input id="ls2" inputmode="decimal" autocomplete="off" placeholder="Same as entry"></div>
+      <div><label for="delta"><b>Δ</b> Total delta</label><input id="delta" spellcheck="false" autocomplete="off" placeholder="or arc length →"></div>
+      <div><label for="lc"><b>Lc</b> Circular arc length</label><input id="lc" inputmode="decimal" autocomplete="off" placeholder="or total Δ"></div>
+    </div>
+    <h2>Optional: stationing and bearings</h2>
+    <div class="fields extra">
+      <div><label for="stType">Station given at</label><select id="stType"><option value="PI" selected>PI</option><option value="TS">TS</option></select></div>
+      <div><label for="sta">Station</label><input id="sta" spellcheck="false" autocomplete="off" placeholder="45+67.89"></div>
+      <div><label for="brg">Back tangent (into the TS)</label><input id="brg" spellcheck="false" autocomplete="off" placeholder="N 30-00-00 E"></div>
+      <div><label for="turn">Curve turns</label><select id="turn"><option value="R" selected>Right</option><option value="L">Left</option></select></div>
+    </div>
+    <div class="opts">
+      <div><label for="plain">Plain numbers for angles mean</label><select id="plain"><option value="dd" selected>Decimal degrees</option><option value="dms">DD.MMSS (calculator format)</option></select></div>
+      <div><label for="dp">Distance decimals</label><select id="dp"><option value="2" selected>0.01</option><option value="3">0.001</option><option value="4">0.0001</option></select></div>
+      <div><label for="sp">Seconds precision</label><select id="sp"><option value="0" selected>Whole seconds</option><option value="1">Tenths</option><option value="2">Hundredths</option></select></div>
+    </div>
+    <div class="actions">
+      <button id="copy" type="button">Copy all</button>
+      <button id="example" type="button">Example</button>
+      <button id="clear" type="button">Clear</button>
+      <span class="copied" id="copied">Copied!</span>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="warn" id="warn"></div>
+  </div>
+
+  <div class="results">
+    <div class="stack">
+      <div class="big"><div class="k">Curve</div><table id="outCurve"></table></div>
+      <div class="big"><div class="k">Spirals</div><table class="two" id="outSpiral"></table></div>
+    </div>
+    <div class="stack">
+      <div class="big"><svg class="diag" id="diag" viewBox="0 0 360 300" role="img" aria-label="Sketch of the spiral curve"></svg></div>
+      <div class="big" id="boxSta" style="display:none"><div class="k">Stations and bearings</div><table id="outSta"></table></div>
+    </div>
+  </div>
+
+  <div class="how">
+    <h2>How it works</h2>
+    <p>The spirals are clothoids, where curvature grows evenly from zero at the TS to 1/R at the SC. The spiral angle is <code>θs = Ls / 2R</code>. X and Y are the SC's distance along the tangent and offset from it, from the standard series. <b>p</b> is how far the circular curve is pushed in from the tangent, and <b>k</b> is how far along the tangent the shifted curve's PC would be.</p>
+    <p>Give either the <b>total Δ</b> (tangent to tangent) or the <b>circular arc length</b>. The arc's own central angle is <code>Δc = Δ − θs(entry) − θs(exit)</code>, so Δ has to be at least the two spiral angles combined.</p>
+    <p>The tangent lengths (TS to PI and PI to ST) and the external come from the actual geometry. That makes them exact for unequal spirals, where the two tangents differ. For equal spirals they match the textbook <code>Ts = (R + p) tan(Δ/2) + k</code> and <code>Es = (R + p) sec(Δ/2) − R</code>.</p>
+    <p><b>LT</b> and <b>ST</b> are the spiral's long and short tangents. <b>LC</b> is the spiral's long chord, and the deflection is the angle at the TS from the tangent to the SC, about θs/3. Stationing runs along the curve: TS + Ls = SC, SC + Lc = CS, CS + Ls = ST.</p>
+  </div>
+
+  <footer>© <span id="yr"></span> jollytiki.com · Provided as-is. Check your work before it goes on a plat.</footer>
+</div>
+
+<script>
+// ===== MATH START =====
+function toNum(s) {
+  if (typeof s === 'number') return s;
+  const t = String(s).replace(/,/g, '').trim();
+  if (t === '' || !/^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(t)) return NaN;
+  return parseFloat(t);
+}
+// Decimal degrees -> D°MM'SS" with carry-safe rounding
+function dms(deg, secDp) {
+  secDp = secDp || 0;
+  const f = Math.pow(10, secDp);
+  let totalSec = Math.round(deg * 3600 * f) / f;
+  let d = Math.floor(totalSec / 3600 + 1e-12);
+  let rem = totalSec - d * 3600;
+  let m = Math.floor(rem / 60 + 1e-12);
+  let s = rem - m * 60;
+  if (s < 0) s = 0;
+  const sStr = s.toFixed(secDp);
+  const sPad = secDp ? sStr.padStart(3 + secDp, '0') : sStr.padStart(2, '0');
+  return d + '°' + String(m).padStart(2, '0') + "'" + sPad + '"';
+}
+function normAz(a) { a = a % 360; if (a < 0) a += 360; return a; }
+// Round an azimuth to display precision (in seconds) and keep it in [0, 360)
+function roundAz(az, secDp) {
+  const f = Math.pow(10, secDp || 0);
+  return normAz(Math.round(az * 3600 * f) / (3600 * f));
+}
+function azDms(az, secDp) { return dms(roundAz(az, secDp), secDp); }
+function bearingFromAz(az, secDp) {
+  // Round first, so 89°59'59.9" displays as N 90°00'00" E instead of landing in the wrong quadrant
+  az = roundAz(az, secDp);
+  let ns, ew, ang;
+  if (az <= 90)       { ns = 'N'; ew = 'E'; ang = az; }
+  else if (az <= 180) { ns = 'S'; ew = 'E'; ang = 180 - az; }
+  else if (az <= 270) { ns = 'S'; ew = 'W'; ang = az - 180; }
+  else                { ns = 'N'; ew = 'W'; ang = 360 - az; }
+  return ns + ' ' + dms(ang, secDp) + ' ' + ew;
+}
+// Signed DMS (dms() handles non-negative values only)
+function sdms(deg, secDp) { return (deg < 0 ? '−' : '') + dms(Math.abs(deg), secDp); }
+// DD.MMSS calculator format, e.g. 45°30'15" -> 45.3015
+function packed(deg, secDp) {
+  secDp = secDp || 0;
+  const f = Math.pow(10, secDp);
+  const neg = deg < 0;
+  const tot = Math.round(Math.abs(deg) * 3600 * f);   // integer units of 1/f seconds
+  const d = Math.floor(tot / (3600 * f));
+  const m = Math.floor((tot - d * 3600 * f) / (60 * f));
+  const sUnits = tot - d * 3600 * f - m * 60 * f;
+  const sWhole = Math.floor(sUnits / f), sFrac = sUnits - sWhole * f;
+  let out = d + '.' + String(m).padStart(2, '0') + String(sWhole).padStart(2, '0');
+  if (secDp) out += String(sFrac).padStart(secDp, '0');
+  return (neg ? '−' : '') + out;
+}
+// Parse DD.MMSS string -> decimal degrees. Returns {deg, warn} or null
+function parsePacked(t) {
+  const m = /^([-+]?)(\d*)(?:\.(\d*))?$/.exec(t);
+  if (!m || (m[2] === '' && !m[3])) return null;
+  const frac = (m[3] || '').padEnd(4, '0');
+  const d = Number(m[2] || 0), mm = Number(frac.slice(0, 2));
+  const ss = Number(frac.slice(2, 4) + '.' + (frac.slice(4) || '0'));
+  const warn = (mm >= 60 || ss >= 60) ? 'Minutes and seconds should be under 60 in DD.MMSS format. Did you mean decimal degrees?' : '';
+  const v = d + mm / 60 + ss / 3600;
+  return { deg: m[1] === '-' ? -v : v, warn };
+}
+// Parse DMS with any separators. Returns {deg, warn} or null
+function parseDms(t) {
+  let sign = 1;
+  t = t.trim();
+  if (/^[-−]/.test(t)) { sign = -1; t = t.slice(1).trim(); }
+  else if (t[0] === '+') t = t.slice(1).trim();
+  const parts = t.split(/\s*(?:°|º|˚|d|deg|'|’|′|m|min|"|”|″|''|s|sec|:|-|\s)+\s*/i).filter(p => p !== '');
+  if (parts.length < 1 || parts.length > 3) return null;
+  if (!parts.every(p => /^(\d+\.?\d*|\.\d+)$/.test(p))) return null;
+  const [d, m = 0, s = 0] = parts.map(Number);
+  let warn = '';
+  if (m >= 60 || s >= 60) warn = 'Minutes and seconds are normally under 60. Check the value you typed.';
+  if (parts.length > 1 && !Number.isInteger(d)) warn = 'Degrees has decimals and minutes too. Check the value you typed.';
+  return { deg: sign * (d + m / 60 + s / 3600), warn };
+}
+// Main parser. mode: how to read a plain number (dd | dms | rad | gon)
+function parseAngle(input, mode) {
+  let t = String(input).trim().replace(/,/g, '');
+  if (t === '') return { empty: true };
+  let bearing = null;
+  const b = /^([NS])\s*(.+?)\s*([EW])$/i.exec(t);
+  if (b) { bearing = { ns: b[1].toUpperCase(), ew: b[3].toUpperCase() }; t = b[2]; }
+  let r, kind;
+  if (/^[-+−]?(\d+\.?\d*|\.\d+)$/.test(t)) {
+    const n = Number(t.replace('−', '-'));
+    if (mode === 'dms') { r = parsePacked(t.replace('−', '-')); kind = 'DD.MMSS'; }
+    else if (mode === 'rad') { r = { deg: n * 180 / Math.PI, warn: '' }; kind = 'radians'; }
+    else if (mode === 'gon') { r = { deg: n * 0.9, warn: '' }; kind = 'gons'; }
+    else { r = { deg: n, warn: '' }; kind = 'decimal degrees'; }
+  } else {
+    r = parseDms(t); kind = 'degrees-minutes-seconds';
+  }
+  if (!r || !isFinite(r.deg)) return { error: "Couldn't read that. Try 45°30'15\", 45 30 15, 45.5 or N 45-30-15 E." };
+  if (bearing) {
+    if (r.deg < 0 || r.deg > 90) return { error: 'A bearing angle has to be between 0° and 90°.' };
+    const a = r.deg;
+    const az = bearing.ns === 'N' ? (bearing.ew === 'E' ? a : 360 - a) : (bearing.ew === 'E' ? 180 - a : 180 + a);
+    return { deg: a, az: normAz(az), kind: 'bearing in ' + kind, warn: r.warn };
+  }
+  return { deg: r.deg, kind, warn: r.warn };
+}
+// deg: the angle to show in DMS/decimal. azIn: direction for bearings (defaults to deg read as an azimuth)
+function convert(deg, secDp, azIn) {
+  const az = roundAz(azIn === undefined ? deg : azIn, secDp);
+  const baz = normAz(az + 180);
+  const dmin = Math.abs(deg) * 60, dd = Math.floor(Math.abs(deg) + 1e-12);
+  return {
+    dms: sdms(deg, secDp),
+    dd: (deg < 0 ? '−' : '') + Math.abs(deg).toFixed(8).replace(/0+$/, '').replace(/\.$/, '') + '°',
+    pk: packed(deg, secDp),
+    az: dms(az, secDp),
+    brg: bearingFromAz(az, secDp),
+    baz: dms(baz, secDp),
+    bb: bearingFromAz(baz, secDp),
+    rad: (deg * Math.PI / 180).toFixed(10),
+    gon: (deg / 0.9).toFixed(6) + ' gon',
+    dm: (deg < 0 ? '−' : '') + dd + '°' + (dmin - dd * 60).toFixed(4).padStart(7, '0') + "'",
+    azDeg: az
+  };
+}
+// ===== MATH END =====
+// ===== SHARED HELPERS =====
+const RAD = Math.PI / 180;
+function fmtLen(v, dp) {
+  return isFinite(v) ? v.toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp }) : '—';
+}
+function fmtNE(v, dp) { return isFinite(v) ? v.toFixed(dp) : '—'; }
+// Read a direction: a quadrant bearing, or a plain angle taken as an azimuth from north
+function readDir(text, mode) {
+  const p = parseAngle(text, mode);
+  if (p.empty || p.error) return p;
+  return { az: p.az !== undefined ? p.az : normAz(p.deg), warn: p.warn, bearing: p.az !== undefined };
+}
+// undefined = blank, NaN = not a number
+function readNum(text) {
+  const t = String(text).trim();
+  return t === '' ? undefined : toNum(t);
+}
+// Inverse between two N/E points
+function inverse(n1, e1, n2, e2) {
+  const dn = n2 - n1, de = e2 - e1;
+  return { dist: Math.hypot(dn, de), az: normAz(Math.atan2(de, dn) / RAD) };
+}
+// "12+34.56" or "1234.56" -> 1234.56
+function parseStation(t) {
+  t = String(t).replace(/,/g, '').trim();
+  if (t === '') return undefined;
+  const m = /^([-+]?)(\d+)\s*\+\s*(\d+(?:\.\d*)?)$/.exec(t);
+  if (m) { const v = Number(m[2]) * 100 + Number(m[3]); return m[1] === '-' ? -v : v; }
+  const n = toNum(t);
+  return isFinite(n) ? n : NaN;
+}
+function fmtStation(v, dp) {
+  const neg = v < 0, f = Math.pow(10, dp);
+  const u = Math.round(Math.abs(v) * f);
+  const hund = Math.floor(u / (100 * f)), rest = (u - hund * 100 * f) / f;
+  return (neg ? '−' : '') + hund + '+' + rest.toFixed(dp).padStart(3 + dp, '0');
+}
+// Fit N/E points into a W×H box, north up, equal scale. Returns p => [x, y]
+function fitter(pts, W, H, pad) {
+  const ns = pts.map(p => p[0]), es = pts.map(p => p[1]);
+  const n0 = Math.min(...ns), n1 = Math.max(...ns), e0 = Math.min(...es), e1 = Math.max(...es);
+  const s = Math.min((W - 2 * pad) / ((e1 - e0) || 1), (H - 2 * pad) / ((n1 - n0) || 1));
+  const cx = (e0 + e1) / 2, cy = (n0 + n1) / 2;
+  return p => [W / 2 + (p[1] - cx) * s, H / 2 - (p[0] - cy) * s];
+}
+const svgEsc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+function svgLine(a, b, st) { return '<line x1="' + a[0].toFixed(1) + '" y1="' + a[1].toFixed(1) + '" x2="' + b[0].toFixed(1) + '" y2="' + b[1].toFixed(1) + '" ' + st + '/>'; }
+function svgDot(a, r, fill) { return '<circle cx="' + a[0].toFixed(1) + '" cy="' + a[1].toFixed(1) + '" r="' + r + '" fill="' + fill + '"/>'; }
+function svgText(a, t, dx, dy, st, anchor) { return '<text x="' + (a[0] + dx).toFixed(1) + '" y="' + (a[1] + dy).toFixed(1) + '" text-anchor="' + (anchor || 'middle') + '" ' + (st || '') + '>' + svgEsc(t) + '</text>'; }
+// Result rows: [label, value, given?] -> table HTML. A null row is a separator.
+function tableRows(rows) {
+  return rows.map(r => r === null ? '<tr class="sep"><td></td><td></td></tr>'
+    : '<tr><td>' + r[0] + '</td><td>' + (r[2] ? '<span class="tag">given</span>' : '') + '<span>' + svgEsc(r[1]) + '</span></td></tr>').join('');
+}
+function rowsText(rows) { return rows.filter(r => r).map(r => r[0].replace(/<[^>]+>/g, '') + ': ' + r[1]).join('\n'); }
+// Click a result to copy it; the Copy all button copies getText()
+function setupCopy(getText) {
+  const flash = () => { const c = document.getElementById('copied'); c.style.opacity = 1; setTimeout(() => c.style.opacity = 0, 1500); };
+  const copy = async t => { try { await navigator.clipboard.writeText(t); flash(); } catch (e) {} };
+  document.addEventListener('click', e => {
+    const td = e.target.closest('.big td:not(:first-child)'); if (!td) return;
+    const span = td.querySelector('span:last-child'); const v = span ? span.textContent : td.textContent;
+    if (v && v !== '—') copy(v);
+  });
+  const btn = document.getElementById('copy');
+  if (btn) btn.onclick = () => { const t = getText(); if (t) copy(t); };
+}
+function showMsg(id, msg) { const el = document.getElementById(id); el.textContent = msg || ''; el.style.display = msg ? 'block' : 'none'; }
+// ===== SHARED HELPERS END =====
+
+// Spiral-curve-spiral geometry. Ported from AlignmentCurveEngine.solveSpiralCurve
+// (survey-app-tauri/src/js/curves.js), with the longer clothoid series and exact p and k.
+function clothoid(l, Ls, R) {
+  if (Ls <= 0 || l <= 0) return { x: 0, y: 0 };
+  const t = l * l / (2 * R * Ls), t2 = t * t;
+  return {
+    x: l * (1 - t2 / 10 + t2 * t2 / 216 - t2 * t2 * t2 / 9360),
+    y: l * (t / 3 - t * t2 / 42 + t * t2 * t2 / 1320 - t * t2 * t2 * t2 / 75600)
+  };
+}
+function spiralParts(Ls, R) {
+  const th = Ls / (2 * R), { x: X, y: Y } = clothoid(Ls, Ls, R);
+  const p = Y - R * (1 - Math.cos(th)), k = X - R * Math.sin(th);
+  return { Ls, th, X, Y, p, k, LT: th > 0 ? X - Y / Math.tan(th) : NaN, ST: th > 0 ? Y / Math.sin(th) : NaN,
+    LC: Math.hypot(X, Y), defl: Ls > 0 ? Math.atan2(Y, X) : 0 };
+}
+// R, Ls1, Ls2, and dTotal (radians) or Lc. az0: back tangent azimuth (deg). sgn: +1 right, -1 left.
+function solveSpiral({ R, Ls1, Ls2, dTotal, Lc, az0 = 0, sgn = 1 }) {
+  if (!(R > 0)) return { error: 'The radius has to be greater than zero.' };
+  if (!(Ls1 >= 0) || !(Ls2 >= 0)) return { error: 'Spiral lengths can\'t be negative.' };
+  const s1 = spiralParts(Ls1, R), s2 = spiralParts(Ls2, R);
+  let dc;
+  if (dTotal !== undefined) {
+    dc = dTotal - s1.th - s2.th;
+    if (dc < -1e-12) return { error: 'Δ is smaller than the two spiral angles combined (' + dms((s1.th + s2.th) / RAD) + '). Shorten the spirals or check Δ.' };
+    dc = Math.max(0, dc);
+  } else {
+    if (!(Lc >= 0)) return { error: 'The arc length can\'t be negative.' };
+    dc = Lc / R;
+  }
+  const D = s1.th + s2.th + dc;
+  if (D >= Math.PI - 1e-9) return { error: 'The total Δ has to be under 180° for the tangents to meet at a PI.' };
+  if (D <= 0) return { error: 'Enter a total Δ or an arc length greater than zero.' };
+  // Lay it out: TS at the origin, heading az0. Points are [north, east].
+  const frame = (o, az, side, l, Ls) => { const { x, y } = clothoid(l, Ls, R), a = az * RAD;
+    return [o[0] + x * Math.cos(a) - side * y * Math.sin(a), o[1] + x * Math.sin(a) + side * y * Math.cos(a)]; };
+  const TS = [0, 0];
+  const SC = frame(TS, az0, sgn, Ls1, Ls1);
+  const hSC = az0 + sgn * s1.th / RAD, hCS = hSC + sgn * dc / RAD, azEnd = az0 + sgn * D / RAD;
+  const at = (o, az, d) => [o[0] + d * Math.cos(az * RAD), o[1] + d * Math.sin(az * RAD)];
+  const O = at(SC, hSC + sgn * 90, R);
+  const CS = at(O, hCS - sgn * 90, R);
+  // The exit spiral, seen from the ST looking back, is an entry spiral turning the other way
+  const off = frame([0, 0], azEnd + 180, -sgn, Ls2, Ls2);
+  const ST = [CS[0] - off[0], CS[1] - off[1]];
+  // PI: where the back tangent (from TS) meets the ahead tangent (through ST)
+  const a1 = az0 * RAD, a2 = azEnd * RAD, dx = ST[1] - TS[1], dy = ST[0] - TS[0];
+  const T1 = (dy * Math.sin(a2) - dx * Math.cos(a2)) / Math.sin(a2 - a1);
+  const PI = at(TS, az0, T1);
+  const T2 = (ST[0] - PI[0]) * Math.cos(a2) + (ST[1] - PI[1]) * Math.sin(a2);
+  const E = Math.hypot(PI[0] - O[0], PI[1] - O[1]) - R;
+  // Polyline for the sketch
+  const pts = [];
+  for (let i = 0; i <= 24; i++) pts.push(frame(TS, az0, sgn, Ls1 * i / 24, Ls1));
+  for (let i = 1; i <= 40; i++) { const h = hSC + sgn * dc / RAD * i / 40; pts.push(at(O, h - sgn * 90, R)); }
+  for (let i = 23; i >= 0; i--) pts.push(frame(ST, azEnd + 180, -sgn, Ls2 * i / 24, Ls2));
+  return { s1, s2, R, D, dc, Lc: R * dc, T1, T2, E, total: Ls1 + R * dc + Ls2, az0, azEnd, hSC, hCS, sgn,
+    pts: { TS, SC, CS, ST, PI, O }, poly: pts };
+}
+
+if (typeof document !== 'undefined') {
+  const $ = id => document.getElementById(id);
+  let lastText = '';
+
+  function diagram(r) {
+    const svg = $('diag'), W = 360, H = 300;
+    if (!r) { svg.innerHTML = '<text x="180" y="150" text-anchor="middle" style="fill:#a9bfb9">Enter the curve to see it</text>'; return; }
+    const P = r.pts;
+    const F = fitter(r.poly.concat([P.PI]), W, H, 34);
+    let o = svgLine(F(P.TS), F(P.PI), 'stroke="#ff8a3d" stroke-width="1.5"') + svgLine(F(P.PI), F(P.ST), 'stroke="#ff8a3d" stroke-width="1.5"');
+    const seg = (a, b, col, w) => '<polyline fill="none" stroke="' + col + '" stroke-width="' + w + '" points="' + r.poly.slice(a, b).map(p => F(p).map(v => v.toFixed(1)).join(',')).join(' ') + '"/>';
+    o += seg(0, 25, '#2f8f6b', 3.5) + seg(24, 65, '#ffc94a', 3) + seg(64, 89, '#2f8f6b', 3.5);
+    [['TS', P.TS], ['SC', P.SC], ['CS', P.CS], ['ST', P.ST]].forEach(([n, p]) => { const q = F(p); o += svgDot(q, 4, '#ff8a3d'); });
+    // Labels pushed away from the PI so they sit outside the curve
+    const pi = F(P.PI);
+    [['TS', P.TS], ['SC', P.SC], ['CS', P.CS], ['ST', P.ST]].forEach(([n, p]) => {
+      const q = F(p), dx = q[0] - pi[0], dy = q[1] - pi[1], L = Math.hypot(dx, dy) || 1;
+      const cx = W / 2, cy = H / 2, ox = (q[0] - cx), oy = (q[1] - cy), Lo = Math.hypot(ox, oy) || 1;
+      o += svgText(q, n, ox / Lo * 18, oy / Lo * 18 + 4, 'style="font-weight:700"');
+    });
+    o += svgDot(pi, 4, '#ff8a3d') + svgText(pi, 'PI', 0, -10, 'style="font-weight:700"');
+    o += '<text x="8" y="' + (H - 8) + '" style="fill:#a9bfb9;font-size:11px"><tspan style="fill:#2f8f6b">━</tspan> spiral  <tspan style="fill:#ffc94a">━</tspan> circular curve</text>';
+    svg.innerHTML = o;
+  }
+
+  function calc() {
+    const mode = $('plain').value, dp = Number($('dp').value), sp = Number($('sp').value);
+    const errs = [], warns = [];
+    const num = id => { const v = readNum($(id).value); $(id).classList.toggle('bad', Number.isNaN(v)); if (Number.isNaN(v)) errs.push('Enter numbers for the radius and lengths.'); return v; };
+    const R = num('R'), Ls1 = num('ls1'), Ls2raw = num('ls2'), Lc = num('lc');
+    const Ls2 = Ls2raw === undefined ? Ls1 : Ls2raw;
+    const dA = parseAngle($('delta').value, mode);
+    $('delta').classList.toggle('bad', !!dA.error || dA.az !== undefined);
+    if (dA.error) errs.push('Δ: ' + dA.error); else if (dA.az !== undefined) errs.push('Δ: enter an angle, not a bearing.');
+    if (dA.warn) warns.push(dA.warn);
+    const haveD = !dA.empty && !dA.error, haveL = Lc !== undefined && !Number.isNaN(Lc);
+    if (haveD && haveL) errs.push('Give the total Δ or the arc length, not both.');
+    const b = parseAngle($('brg').value, mode);
+    $('brg').classList.toggle('bad', !!b.error);
+    if (b.error) errs.push('Back tangent: ' + b.error);
+    const az0 = b.empty || b.error ? undefined : (b.az !== undefined ? b.az : normAz(b.deg));
+    const sgn = $('turn').value === 'L' ? -1 : 1;
+    showMsg('err', errs[0]);
+    const blank = () => { ['outCurve', 'outSpiral', 'outSta'].forEach(id => $(id).innerHTML = ''); $('boxSta').style.display = 'none'; diagram(null); lastText = ''; showMsg('warn', warns[0]); };
+    if (errs.length || R === undefined || Ls1 === undefined || (!haveD && !haveL)) return blank();
+    const r = solveSpiral({ R, Ls1, Ls2, dTotal: haveD ? dA.deg * RAD : undefined, Lc: haveL ? Lc : undefined, az0: az0 === undefined ? 0 : az0, sgn });
+    if (r.error) { showMsg('err', r.error); return blank(); }
+    if (Math.max(r.s1.th, r.s2.th) > 30 * RAD) warns.push('A spiral angle over 30° is unusually sharp. Check the spiral length against the radius.');
+    showMsg('warn', warns[0]);
+    const L = v => fmtLen(v, dp), A = v => dms(v / RAD, sp);
+    const curve = [
+      ['<b>Δ</b> Total delta', A(r.D), haveD], ['<b>Δc</b> Circular curve delta', A(r.dc)],
+      ['<b>R</b> Radius', L(R), true], ['<b>D</b> Degree of curve (arc)', dms(18000 / (Math.PI * R), sp)],
+      ['<b>Lc</b> Circular arc length', L(r.Lc), haveL], null,
+      ['<b>T</b> Tangent, TS to PI', L(r.T1)], ['<b>T</b> Tangent, PI to ST', L(r.T2)],
+      ['<b>E</b> External', L(r.E)], ['Total length, TS to ST', L(r.total)]
+    ];
+    $('outCurve').innerHTML = tableRows(curve);
+    const same = Math.abs(Ls1 - Ls2) < 1e-12;
+    const sRows = [['θs Spiral angle', s => A(s.th)], ['Ls Spiral length', s => L(s.Ls)], ['X', s => L(s.X)], ['Y', s => L(s.Y)],
+      ['p', s => L(s.p)], ['k', s => L(s.k)], ['LT Long tangent', s => s.th ? L(s.LT) : '—'], ['ST Short tangent', s => s.th ? L(s.ST) : '—'],
+      ['LC Long chord', s => L(s.LC)], ['Deflection at TS / ST', s => A(s.defl)]];
+    let h = '<tr><th></th><th>' + (same ? 'Each spiral' : 'Entry') + '</th>' + (same ? '' : '<th>Exit</th>') + '</tr>';
+    const sText = [];
+    sRows.forEach(([n, f]) => {
+      h += '<tr><td>' + n + '</td><td><span>' + f(r.s1) + '</span></td>' + (same ? '' : '<td><span>' + f(r.s2) + '</span></td>') + '</tr>';
+      sText.push(n + ': ' + f(r.s1) + (same ? '' : ' / ' + f(r.s2)));
+    });
+    $('outSpiral').innerHTML = h;
+    // Stations and bearings
+    const st = parseStation($('sta').value);
+    $('sta').classList.toggle('bad', Number.isNaN(st));
+    const staRows = [];
+    if (Number.isNaN(st)) warns.push('Couldn\'t read the station. Use 45+67.89 or 4567.89.');
+    else if (st !== undefined) {
+      const ts = $('stType').value === 'PI' ? st - r.T1 : st;
+      staRows.push(['PI', fmtStation(ts + r.T1, dp)], ['TS', fmtStation(ts, dp)], ['SC', fmtStation(ts + Ls1, dp)], ['CS', fmtStation(ts + Ls1 + r.Lc, dp)], ['ST', fmtStation(ts + r.total, dp)]);
+    }
+    if (az0 !== undefined) {
+      if (staRows.length) staRows.push(null);
+      staRows.push(['Back tangent', bearingFromAz(az0, sp)],
+        ['Chord TS → SC', bearingFromAz(az0 + sgn * r.s1.defl / RAD, sp)],
+        ['Tangent at SC', bearingFromAz(r.hSC, sp)], ['Tangent at CS', bearingFromAz(r.hCS, sp)],
+        ['Chord CS → ST', bearingFromAz(r.azEnd - sgn * r.s2.defl / RAD, sp)],
+        ['Ahead tangent', bearingFromAz(r.azEnd, sp)]);
+    }
+    showMsg('warn', warns[0]);
+    $('outSta').innerHTML = tableRows(staRows);
+    $('boxSta').style.display = staRows.length ? 'block' : 'none';
+    diagram(r);
+    lastText = rowsText(curve) + '\n\n' + sText.join('\n') + (staRows.length ? '\n\n' + rowsText(staRows) : '');
+  }
+
+  document.querySelectorAll('.panel input, .panel select').forEach(el => el.addEventListener('input', calc));
+  setupCopy(() => lastText);
+  $('clear').onclick = () => { document.querySelectorAll('.panel input').forEach(i => i.value = ''); calc(); $('R').focus(); };
+  $('example').onclick = () => {
+    document.querySelectorAll('.panel input').forEach(i => i.value = '');
+    $('R').value = '1145.92'; $('ls1').value = '300'; $('delta').value = '38 30 00';
+    $('stType').value = 'PI'; $('sta').value = '45+67.89'; $('brg').value = 'N 30-00-00 E'; $('turn').value = 'R';
+    calc();
+  };
+  $('example').onclick();
+}
+
+if (typeof document !== 'undefined') document.getElementById('yr').textContent = new Date().getFullYear();
+</script>
+<script data-goatcounter="https://jollytiki.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

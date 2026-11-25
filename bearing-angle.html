@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Angle Between Bearings — Interior &amp; Exterior Angles | Jolly Tiki</title>
+<meta name="description" content="Free survey calculator: enter two bearings or azimuths and get the interior and exterior angle between them, the angle right and left, and the deflection angle.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e; --deep: #071a1d; --panel: #12363b; --line: #1f4b51;
+    --sand: #f4e3c1; --muted: #a9bfb9; --torch: #ff8a3d; --flame: #ffc94a;
+    --hibiscus: #e8475c; --leaf: #2f8f6b; --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #071a1d; }
+  body { font-family: "Karla", system-ui, sans-serif; color: var(--sand); line-height: 1.5;
+    background: radial-gradient(ellipse at 50% -10%, #1d4f55, transparent 55%), linear-gradient(180deg, var(--night), var(--deep) 70%);
+    background-attachment: fixed; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(244,227,193,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,227,193,.035) 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .wrap { position: relative; max-width: 900px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; }
+  .brand { color: var(--flame); font-family: "Bungee", Impact, sans-serif; font-size: 1.2rem; text-decoration: none; }
+  header a.back { color: var(--muted); text-decoration: none; font-weight: 600; }
+  header a.back:hover { color: var(--flame); }
+  h1 { font-family: "Bungee", Impact, sans-serif; color: var(--flame); font-size: clamp(1.8rem, 5vw, 2.6rem);
+       text-shadow: 0 3px 0 var(--wood-dark); margin: 1rem 0 .3rem; }
+  .lede { color: var(--muted); margin-bottom: 1.5rem; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  .panel h2 { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .6rem; font-weight: 700; }
+  label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: .2rem; }
+  label b { color: var(--sand); font-family: "JetBrains Mono", monospace; }
+  input, select { width: 100%; padding: .6rem .7rem; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--deep); color: var(--sand); font-family: "JetBrains Mono", monospace; font-size: 1rem; }
+  input:focus, select:focus { outline: 2px solid var(--torch); outline-offset: 1px; }
+  input.given { border-color: var(--flame); }
+  input.bad { border-color: var(--hibiscus); }
+  button { cursor: pointer; padding: .55rem 1rem; border-radius: 999px; border: 1px solid var(--line); background: transparent;
+    color: var(--sand); font-family: inherit; font-weight: 600; }
+  button:hover { border-color: var(--torch); color: var(--flame); }
+  .fields { display: grid; gap: .7rem 1rem; margin-bottom: 1rem; }
+  .opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding-top: 1rem; border-top: 1px dashed var(--line); margin-bottom: .9rem; }
+  .actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+  .copied { color: var(--leaf); font-weight: 600; align-self: center; opacity: 0; transition: opacity .2s; }
+  .err { color: var(--hibiscus); font-weight: 600; margin-top: .8rem; display: none; }
+  .warn { color: var(--torch); font-weight: 600; margin-top: .6rem; display: none; }
+  .info { color: var(--muted); margin-top: .8rem; }
+  .results { margin-top: 1.25rem; display: grid; grid-template-columns: 1.1fr 1fr; gap: 1rem; }
+  .big { background: var(--deep); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  .big .k { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .3rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td { padding: .4rem .2rem; border-bottom: 1px solid var(--line); }
+  td:first-child { color: var(--muted); }
+  td:first-child b { color: var(--sand); font-family: "JetBrains Mono", monospace; margin-right: .35rem; }
+  td:last-child { text-align: right; font-family: "JetBrains Mono", monospace; cursor: pointer; white-space: nowrap; }
+  td:last-child:hover { color: var(--flame); }
+  td .tag { font-family: "Karla", sans-serif; font-size: .7rem; color: var(--flame); border: 1px solid var(--flame); border-radius: 999px; padding: 0 .4rem; margin-right: .4rem; vertical-align: 1px; }
+  tr.sep td { border-bottom: 1px dashed var(--line); padding: .15rem; }
+  svg.diag { width: 100%; height: auto; display: block; }
+  svg.diag text { font-family: "JetBrains Mono", monospace; font-size: 13px; fill: var(--sand); }
+  .how { margin-top: 2rem; color: var(--muted); }
+  .how h2 { font-family: "Bungee", Impact, sans-serif; color: var(--sand); font-size: 1.15rem; margin-bottom: .5rem; }
+  .how p { margin-bottom: .6rem; }
+  .how code { font-family: "JetBrains Mono", monospace; color: var(--sand); background: var(--deep); padding: .05rem .35rem; border-radius: 4px; }
+  .how a { color: var(--flame); }
+  footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+  .fields.two { grid-template-columns: 1fr 1fr; }
+  .examples { display: flex; flex-wrap: wrap; gap: .4rem; margin: -.3rem 0 1rem; }
+  .examples button { padding: .2rem .65rem; font-family: "JetBrains Mono", monospace; font-size: .8rem; font-weight: 500; color: var(--muted); }
+  .bigs { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-bottom: .8rem; }
+  .bigv { cursor: pointer; }
+  .bigv .k { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+  .bigv .v { font-family: "JetBrains Mono", monospace; font-weight: 700; color: var(--flame); font-size: clamp(1.35rem, 3.6vw, 1.9rem); }
+  .bigv.ext .v { color: var(--torch); }
+  .bigv:hover .v { text-decoration: underline dotted; }
+  @media (max-width: 680px) { .fields.two, .results, .opts { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/">Jolly Tiki</a>
+    <a class="back" href="/">← All tools</a>
+  </header>
+
+  <h1>Angle Between Bearings</h1>
+  <p class="lede">Enter two bearings and get the interior and exterior angle between them, plus the angle right, angle left and deflection. Click any result to copy it.</p>
+
+  <div class="panel">
+    <div class="fields two">
+      <div><label for="b1">Line 1 bearing</label><input id="b1" spellcheck="false" autocomplete="off" placeholder="N 45-30-15 W"></div>
+      <div><label for="b2">Line 2 bearing</label><input id="b2" spellcheck="false" autocomplete="off" placeholder="S 30-00-00 W"></div>
+    </div>
+    <div class="examples" aria-label="Examples">
+      <button type="button" data-a="N 45-30-15 W" data-b="S 30-00-00 W" data-m="out">N 45-30-15 W &amp; S 30 W</button>
+      <button type="button" data-a="N 88-15-00 E" data-b="S 01-45-00 E" data-m="out">N 88-15 E &amp; S 1-45 E</button>
+      <button type="button" data-a="N 60-00-00 E" data-b="S 75-30-00 E" data-m="through">Traverse: N 60 E then S 75-30 E</button>
+    </div>
+    <div class="opts">
+      <div>
+        <label for="mode">How the lines meet</label>
+        <select id="mode">
+          <option value="out" selected>Both leave the corner</option>
+          <option value="through">Line 1 arrives, line 2 leaves</option>
+        </select>
+      </div>
+      <div>
+        <label for="plain">Plain numbers mean</label>
+        <select id="plain"><option value="dd" selected>Azimuth, decimal degrees</option><option value="dms">Azimuth, DD.MMSS</option></select>
+      </div>
+      <div>
+        <label for="sp">Seconds precision</label>
+        <select id="sp"><option value="0" selected>Whole seconds</option><option value="1">Tenths</option><option value="2">Hundredths</option></select>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="copy" type="button">Copy all</button>
+      <button id="swap" type="button">Swap lines</button>
+      <button id="clear" type="button">Clear</button>
+      <span class="copied" id="copied">Copied!</span>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="warn" id="warn"></div>
+  </div>
+
+  <div class="results">
+    <div class="big">
+      <div class="bigs">
+        <div class="bigv" id="c-int"><div class="k">Interior angle</div><div class="v" id="r-int">—</div></div>
+        <div class="bigv ext" id="c-ext"><div class="k">Exterior angle</div><div class="v" id="r-ext">—</div></div>
+      </div>
+      <table id="out"></table>
+    </div>
+    <div class="big">
+      <svg class="diag" id="diag" viewBox="-170 -170 340 340" role="img" aria-label="Sketch of the two lines and the angles between them"></svg>
+    </div>
+  </div>
+
+  <div class="how">
+    <h2>How it works</h2>
+    <p><b>Interior</b> is the smaller angle between the two lines, 180° or less. <b>Exterior</b> is the rest of the circle, 360° minus the interior. Together they always total 360°.</p>
+    <p><b>Both leave the corner</b> is for two lines that leave the same point, like a NW line and a SW line drawn from one corner. The angle is measured between them exactly as written.</p>
+    <p><b>Line 1 arrives, line 2 leaves</b> is for a traverse or a deed, where you arrive on line 1 and leave on line 2. Line 1 is turned around (its back bearing) before the angle is measured. The deflection angle is how far you turn, right or left, from the direction you were heading.</p>
+    <p><b>Angle right</b> is turned clockwise from line 1 to line 2, the way most total stations turn angles. <b>Angle left</b> is turned counterclockwise. Bearings can be written <code>N 45-30-15 W</code>, <code>N45°30'15"W</code> or <code>N45.3015W</code>. A plain number is an azimuth from north.</p>
+  </div>
+
+  <footer>© <span id="yr"></span> jollytiki.com · Provided as-is. Check your work before it goes on a plat.</footer>
+</div>
+
+<script>
+// ===== MATH START =====
+function toNum(s) {
+  if (typeof s === 'number') return s;
+  const t = String(s).replace(/,/g, '').trim();
+  if (t === '' || !/^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(t)) return NaN;
+  return parseFloat(t);
+}
+// Decimal degrees -> D°MM'SS" with carry-safe rounding
+function dms(deg, secDp) {
+  secDp = secDp || 0;
+  const f = Math.pow(10, secDp);
+  let totalSec = Math.round(deg * 3600 * f) / f;
+  let d = Math.floor(totalSec / 3600 + 1e-12);
+  let rem = totalSec - d * 3600;
+  let m = Math.floor(rem / 60 + 1e-12);
+  let s = rem - m * 60;
+  if (s < 0) s = 0;
+  const sStr = s.toFixed(secDp);
+  const sPad = secDp ? sStr.padStart(3 + secDp, '0') : sStr.padStart(2, '0');
+  return d + '°' + String(m).padStart(2, '0') + "'" + sPad + '"';
+}
+function normAz(a) { a = a % 360; if (a < 0) a += 360; return a; }
+// Round an azimuth to display precision (in seconds) and keep it in [0, 360)
+function roundAz(az, secDp) {
+  const f = Math.pow(10, secDp || 0);
+  return normAz(Math.round(az * 3600 * f) / (3600 * f));
+}
+function azDms(az, secDp) { return dms(roundAz(az, secDp), secDp); }
+function bearingFromAz(az, secDp) {
+  // Round first, so 89°59'59.9" displays as N 90°00'00" E instead of landing in the wrong quadrant
+  az = roundAz(az, secDp);
+  let ns, ew, ang;
+  if (az <= 90)       { ns = 'N'; ew = 'E'; ang = az; }
+  else if (az <= 180) { ns = 'S'; ew = 'E'; ang = 180 - az; }
+  else if (az <= 270) { ns = 'S'; ew = 'W'; ang = az - 180; }
+  else                { ns = 'N'; ew = 'W'; ang = 360 - az; }
+  return ns + ' ' + dms(ang, secDp) + ' ' + ew;
+}
+// Signed DMS (dms() handles non-negative values only)
+function sdms(deg, secDp) { return (deg < 0 ? '−' : '') + dms(Math.abs(deg), secDp); }
+// DD.MMSS calculator format, e.g. 45°30'15" -> 45.3015
+function packed(deg, secDp) {
+  secDp = secDp || 0;
+  const f = Math.pow(10, secDp);
+  const neg = deg < 0;
+  const tot = Math.round(Math.abs(deg) * 3600 * f);   // integer units of 1/f seconds
+  const d = Math.floor(tot / (3600 * f));
+  const m = Math.floor((tot - d * 3600 * f) / (60 * f));
+  const sUnits = tot - d * 3600 * f - m * 60 * f;
+  const sWhole = Math.floor(sUnits / f), sFrac = sUnits - sWhole * f;
+  let out = d + '.' + String(m).padStart(2, '0') + String(sWhole).padStart(2, '0');
+  if (secDp) out += String(sFrac).padStart(secDp, '0');
+  return (neg ? '−' : '') + out;
+}
+// Parse DD.MMSS string -> decimal degrees. Returns {deg, warn} or null
+function parsePacked(t) {
+  const m = /^([-+]?)(\d*)(?:\.(\d*))?$/.exec(t);
+  if (!m || (m[2] === '' && !m[3])) return null;
+  const frac = (m[3] || '').padEnd(4, '0');
+  const d = Number(m[2] || 0), mm = Number(frac.slice(0, 2));
+  const ss = Number(frac.slice(2, 4) + '.' + (frac.slice(4) || '0'));
+  const warn = (mm >= 60 || ss >= 60) ? 'Minutes and seconds should be under 60 in DD.MMSS format. Did you mean decimal degrees?' : '';
+  const v = d + mm / 60 + ss / 3600;
+  return { deg: m[1] === '-' ? -v : v, warn };
+}
+// Parse DMS with any separators. Returns {deg, warn} or null
+function parseDms(t) {
+  let sign = 1;
+  t = t.trim();
+  if (/^[-−]/.test(t)) { sign = -1; t = t.slice(1).trim(); }
+  else if (t[0] === '+') t = t.slice(1).trim();
+  const parts = t.split(/\s*(?:°|º|˚|d|deg|'|’|′|m|min|"|”|″|''|s|sec|:|-|\s)+\s*/i).filter(p => p !== '');
+  if (parts.length < 1 || parts.length > 3) return null;
+  if (!parts.every(p => /^(\d+\.?\d*|\.\d+)$/.test(p))) return null;
+  const [d, m = 0, s = 0] = parts.map(Number);
+  let warn = '';
+  if (m >= 60 || s >= 60) warn = 'Minutes and seconds are normally under 60. Check the value you typed.';
+  if (parts.length > 1 && !Number.isInteger(d)) warn = 'Degrees has decimals and minutes too. Check the value you typed.';
+  return { deg: sign * (d + m / 60 + s / 3600), warn };
+}
+// Main parser. mode: how to read a plain number (dd | dms | rad | gon)
+function parseAngle(input, mode) {
+  let t = String(input).trim().replace(/,/g, '');
+  if (t === '') return { empty: true };
+  let bearing = null;
+  const b = /^([NS])\s*(.+?)\s*([EW])$/i.exec(t);
+  if (b) { bearing = { ns: b[1].toUpperCase(), ew: b[3].toUpperCase() }; t = b[2]; }
+  let r, kind;
+  if (/^[-+−]?(\d+\.?\d*|\.\d+)$/.test(t)) {
+    const n = Number(t.replace('−', '-'));
+    if (mode === 'dms') { r = parsePacked(t.replace('−', '-')); kind = 'DD.MMSS'; }
+    else if (mode === 'rad') { r = { deg: n * 180 / Math.PI, warn: '' }; kind = 'radians'; }
+    else if (mode === 'gon') { r = { deg: n * 0.9, warn: '' }; kind = 'gons'; }
+    else { r = { deg: n, warn: '' }; kind = 'decimal degrees'; }
+  } else {
+    r = parseDms(t); kind = 'degrees-minutes-seconds';
+  }
+  if (!r || !isFinite(r.deg)) return { error: "Couldn't read that. Try 45°30'15\", 45 30 15, 45.5 or N 45-30-15 E." };
+  if (bearing) {
+    if (r.deg < 0 || r.deg > 90) return { error: 'A bearing angle has to be between 0° and 90°.' };
+    const a = r.deg;
+    const az = bearing.ns === 'N' ? (bearing.ew === 'E' ? a : 360 - a) : (bearing.ew === 'E' ? 180 - a : 180 + a);
+    return { deg: a, az: normAz(az), kind: 'bearing in ' + kind, warn: r.warn };
+  }
+  return { deg: r.deg, kind, warn: r.warn };
+}
+// deg: the angle to show in DMS/decimal. azIn: direction for bearings (defaults to deg read as an azimuth)
+function convert(deg, secDp, azIn) {
+  const az = roundAz(azIn === undefined ? deg : azIn, secDp);
+  const baz = normAz(az + 180);
+  const dmin = Math.abs(deg) * 60, dd = Math.floor(Math.abs(deg) + 1e-12);
+  return {
+    dms: sdms(deg, secDp),
+    dd: (deg < 0 ? '−' : '') + Math.abs(deg).toFixed(8).replace(/0+$/, '').replace(/\.$/, '') + '°',
+    pk: packed(deg, secDp),
+    az: dms(az, secDp),
+    brg: bearingFromAz(az, secDp),
+    baz: dms(baz, secDp),
+    bb: bearingFromAz(baz, secDp),
+    rad: (deg * Math.PI / 180).toFixed(10),
+    gon: (deg / 0.9).toFixed(6) + ' gon',
+    dm: (deg < 0 ? '−' : '') + dd + '°' + (dmin - dd * 60).toFixed(4).padStart(7, '0') + "'",
+    azDeg: az
+  };
+}
+// ===== MATH END =====
+// ===== SHARED HELPERS =====
+const RAD = Math.PI / 180;
+function fmtLen(v, dp) {
+  return isFinite(v) ? v.toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp }) : '—';
+}
+function fmtNE(v, dp) { return isFinite(v) ? v.toFixed(dp) : '—'; }
+// Read a direction: a quadrant bearing, or a plain angle taken as an azimuth from north
+function readDir(text, mode) {
+  const p = parseAngle(text, mode);
+  if (p.empty || p.error) return p;
+  return { az: p.az !== undefined ? p.az : normAz(p.deg), warn: p.warn, bearing: p.az !== undefined };
+}
+// undefined = blank, NaN = not a number
+function readNum(text) {
+  const t = String(text).trim();
+  return t === '' ? undefined : toNum(t);
+}
+// Inverse between two N/E points
+function inverse(n1, e1, n2, e2) {
+  const dn = n2 - n1, de = e2 - e1;
+  return { dist: Math.hypot(dn, de), az: normAz(Math.atan2(de, dn) / RAD) };
+}
+// "12+34.56" or "1234.56" -> 1234.56
+function parseStation(t) {
+  t = String(t).replace(/,/g, '').trim();
+  if (t === '') return undefined;
+  const m = /^([-+]?)(\d+)\s*\+\s*(\d+(?:\.\d*)?)$/.exec(t);
+  if (m) { const v = Number(m[2]) * 100 + Number(m[3]); return m[1] === '-' ? -v : v; }
+  const n = toNum(t);
+  return isFinite(n) ? n : NaN;
+}
+function fmtStation(v, dp) {
+  const neg = v < 0, f = Math.pow(10, dp);
+  const u = Math.round(Math.abs(v) * f);
+  const hund = Math.floor(u / (100 * f)), rest = (u - hund * 100 * f) / f;
+  return (neg ? '−' : '') + hund + '+' + rest.toFixed(dp).padStart(3 + dp, '0');
+}
+// Fit N/E points into a W×H box, north up, equal scale. Returns p => [x, y]
+function fitter(pts, W, H, pad) {
+  const ns = pts.map(p => p[0]), es = pts.map(p => p[1]);
+  const n0 = Math.min(...ns), n1 = Math.max(...ns), e0 = Math.min(...es), e1 = Math.max(...es);
+  const s = Math.min((W - 2 * pad) / ((e1 - e0) || 1), (H - 2 * pad) / ((n1 - n0) || 1));
+  const cx = (e0 + e1) / 2, cy = (n0 + n1) / 2;
+  return p => [W / 2 + (p[1] - cx) * s, H / 2 - (p[0] - cy) * s];
+}
+const svgEsc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+function svgLine(a, b, st) { return '<line x1="' + a[0].toFixed(1) + '" y1="' + a[1].toFixed(1) + '" x2="' + b[0].toFixed(1) + '" y2="' + b[1].toFixed(1) + '" ' + st + '/>'; }
+function svgDot(a, r, fill) { return '<circle cx="' + a[0].toFixed(1) + '" cy="' + a[1].toFixed(1) + '" r="' + r + '" fill="' + fill + '"/>'; }
+function svgText(a, t, dx, dy, st, anchor) { return '<text x="' + (a[0] + dx).toFixed(1) + '" y="' + (a[1] + dy).toFixed(1) + '" text-anchor="' + (anchor || 'middle') + '" ' + (st || '') + '>' + svgEsc(t) + '</text>'; }
+// Result rows: [label, value, given?] -> table HTML. A null row is a separator.
+function tableRows(rows) {
+  return rows.map(r => r === null ? '<tr class="sep"><td></td><td></td></tr>'
+    : '<tr><td>' + r[0] + '</td><td>' + (r[2] ? '<span class="tag">given</span>' : '') + '<span>' + svgEsc(r[1]) + '</span></td></tr>').join('');
+}
+function rowsText(rows) { return rows.filter(r => r).map(r => r[0].replace(/<[^>]+>/g, '') + ': ' + r[1]).join('\n'); }
+// Click a result to copy it; the Copy all button copies getText()
+function setupCopy(getText) {
+  const flash = () => { const c = document.getElementById('copied'); c.style.opacity = 1; setTimeout(() => c.style.opacity = 0, 1500); };
+  const copy = async t => { try { await navigator.clipboard.writeText(t); flash(); } catch (e) {} };
+  document.addEventListener('click', e => {
+    const td = e.target.closest('.big td:not(:first-child)'); if (!td) return;
+    const span = td.querySelector('span:last-child'); const v = span ? span.textContent : td.textContent;
+    if (v && v !== '—') copy(v);
+  });
+  const btn = document.getElementById('copy');
+  if (btn) btn.onclick = () => { const t = getText(); if (t) copy(t); };
+}
+function showMsg(id, msg) { const el = document.getElementById(id); el.textContent = msg || ''; el.style.display = msg ? 'block' : 'none'; }
+// ===== SHARED HELPERS END =====
+
+// Angles between two directions. az1, az2: azimuths in degrees. through: line 1 arrives at the corner.
+function angleBetween(az1, az2, through) {
+  const r1 = normAz(through ? az1 + 180 : az1), r2 = normAz(az2);
+  const right = normAz(r2 - r1);
+  const interior = Math.min(right, 360 - right);
+  const res = { r1, r2, right, left: normAz(360 - right), interior, exterior: 360 - interior };
+  if (through) {
+    const d = normAz(az2 - az1);
+    res.deflection = d <= 180 ? d : 360 - d;
+    res.deflDir = d === 0 || d === 180 ? '' : (d < 180 ? 'R' : 'L');
+  }
+  return res;
+}
+
+if (typeof document !== 'undefined') {
+  const $ = id => document.getElementById(id);
+  let lastRows = null, lastHead = '';
+
+  function diagram(a, sp) {
+    const svg = $('diag');
+    let s = '<circle r="118" fill="none" stroke="#1f4b51" stroke-width="1.5"/>';
+    s += '<line x1="0" y1="-150" x2="0" y2="150" stroke="#1f4b51" stroke-dasharray="3 5"/><line x1="-150" y1="0" x2="150" y2="0" stroke="#1f4b51" stroke-dasharray="3 5"/>';
+    s += '<text x="0" y="-154" text-anchor="middle" style="fill:#ffc94a">N</text>';
+    if (!a) { svg.innerHTML = s + '<text x="0" y="5" text-anchor="middle" style="fill:#a9bfb9">Enter two bearings</text>'; return; }
+    const pt = (az, r) => [Math.sin(az * RAD) * r, -Math.cos(az * RAD) * r];
+    const arc = (from, sweep, r, large) => { const p = pt(from, r), q = pt(from + sweep, r);
+      return 'M0 0 L' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ' A' + r + ' ' + r + ' 0 ' + large + ' 1 ' + q[0].toFixed(1) + ' ' + q[1].toFixed(1) + ' Z'; };
+    // Interior: the shorter way round from one ray to the other
+    const intFrom = a.right <= 180 ? a.r1 : a.r2, intSweep = a.interior;
+    if (a.interior > 0.001) s += '<path d="' + arc(intFrom, intSweep, 62, 0) + '" fill="rgba(255,201,74,.18)" stroke="#ffc94a" stroke-width="2"/>';
+    if (a.exterior < 359.999) {
+      const p = pt(intFrom + intSweep, 38), q = pt(intFrom + 360, 38);
+      s += '<path d="M' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ' A38 38 0 1 1 ' + q[0].toFixed(1) + ' ' + q[1].toFixed(1) + '" fill="none" stroke="#ff8a3d" stroke-width="2" stroke-dasharray="5 4"/>';
+    }
+    const lab = (az, r, t, st) => { const p = pt(az, r); return '<text x="' + p[0].toFixed(1) + '" y="' + (p[1] + 4).toFixed(1) + '" text-anchor="middle" ' + st + '>' + t + '</text>'; };
+    if (a.interior > 8) s += lab(intFrom + intSweep / 2, 84, 'int', 'style="fill:#ffc94a;font-size:12px"');
+    s += lab(intFrom + intSweep + (360 - intSweep) / 2, 24, 'ext', 'style="fill:#ff8a3d;font-size:12px"');
+    [[a.r1, '1'], [a.r2, '2']].forEach(([az, n]) => {
+      const p = pt(az, 140);
+      s += '<line x1="0" y1="0" x2="' + p[0].toFixed(1) + '" y2="' + p[1].toFixed(1) + '" stroke="#f4e3c1" stroke-width="3" stroke-linecap="round"/>';
+      s += lab(az, 156, n, 'style="fill:#f4e3c1;font-weight:700"');
+    });
+    s += '<circle r="5" fill="#ff8a3d"/>';
+    svg.innerHTML = s;
+  }
+
+  function calc() {
+    const mode = $('plain').value, sp = Number($('sp').value), through = $('mode').value === 'through';
+    const d1 = readDir($('b1').value, mode), d2 = readDir($('b2').value, mode);
+    $('b1').classList.toggle('bad', !!d1.error); $('b2').classList.toggle('bad', !!d2.error);
+    showMsg('err', d1.error ? 'Line 1: ' + d1.error : d2.error ? 'Line 2: ' + d2.error : '');
+    showMsg('warn', d1.warn || d2.warn || '');
+    lastRows = null;
+    if (d1.error || d2.error || d1.empty || d2.empty) {
+      $('r-int').textContent = '—'; $('r-ext').textContent = '—'; $('out').innerHTML = ''; diagram(null); return;
+    }
+    const a = angleBetween(d1.az, d2.az, through);
+    $('r-int').textContent = dms(a.interior, sp);
+    $('r-ext').textContent = dms(a.exterior, sp);
+    const rows = [
+      ['Angle right (clockwise, 1 → 2)', dms(a.right, sp)],
+      ['Angle left (counterclockwise, 1 → 2)', dms(a.left, sp)]
+    ];
+    if (through) rows.push(['Deflection angle', dms(a.deflection, sp) + (a.deflDir ? ' ' + a.deflDir : '')]);
+    rows.push(null,
+      ['Line 1 bearing', bearingFromAz(d1.az, sp)], ['Line 1 azimuth', azDms(d1.az, sp)],
+      ['Line 2 bearing', bearingFromAz(d2.az, sp)], ['Line 2 azimuth', azDms(d2.az, sp)]);
+    if (through) rows.push(['Line 1 back bearing (from the corner)', bearingFromAz(d1.az + 180, sp)]);
+    $('out').innerHTML = tableRows(rows);
+    lastRows = rows;
+    lastHead = 'Interior angle: ' + dms(a.interior, sp) + '\nExterior angle: ' + dms(a.exterior, sp) + '\n';
+    diagram(a, sp);
+  }
+
+  document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', calc));
+  setupCopy(() => lastRows ? lastHead + rowsText(lastRows) : '');
+  ['int', 'ext'].forEach(k => $('c-' + k).onclick = async () => {
+    const v = $('r-' + k).textContent; if (v === '—') return;
+    try { await navigator.clipboard.writeText(v); $('copied').style.opacity = 1; setTimeout(() => $('copied').style.opacity = 0, 1500); } catch (e) {}
+  });
+  document.querySelectorAll('.examples button').forEach(b => b.onclick = () => {
+    $('b1').value = b.dataset.a; $('b2').value = b.dataset.b; $('mode').value = b.dataset.m; calc();
+  });
+  $('swap').onclick = () => { const t = $('b1').value; $('b1').value = $('b2').value; $('b2').value = t; calc(); };
+  $('clear').onclick = () => { $('b1').value = ''; $('b2').value = ''; calc(); $('b1').focus(); };
+  document.querySelector('.examples button').onclick();
+}
+
+if (typeof document !== 'undefined') document.getElementById('yr').textContent = new Date().getFullYear();
+</script>
+<script data-goatcounter="https://jollytiki.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

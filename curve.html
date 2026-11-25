@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Circular Curve Solver — Radius, Delta, Length, Tangent, Chord | Jolly Tiki</title>
+<meta name="description" content="Free horizontal curve calculator for surveyors: enter any two of delta, radius, degree of curve, arc length, tangent, chord, external or middle ordinate and get the rest, plus stationing and chord bearing.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e; --deep: #071a1d; --panel: #12363b; --line: #1f4b51;
+    --sand: #f4e3c1; --muted: #a9bfb9; --torch: #ff8a3d; --flame: #ffc94a;
+    --hibiscus: #e8475c; --leaf: #2f8f6b; --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #071a1d; }
+  body { font-family: "Karla", system-ui, sans-serif; color: var(--sand); line-height: 1.5;
+    background: radial-gradient(ellipse at 50% -10%, #1d4f55, transparent 55%), linear-gradient(180deg, var(--night), var(--deep) 70%);
+    background-attachment: fixed; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(244,227,193,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,227,193,.035) 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .wrap { position: relative; max-width: 900px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; }
+  .brand { color: var(--flame); font-family: "Bungee", Impact, sans-serif; font-size: 1.2rem; text-decoration: none; }
+  header a.back { color: var(--muted); text-decoration: none; font-weight: 600; }
+  header a.back:hover { color: var(--flame); }
+  h1 { font-family: "Bungee", Impact, sans-serif; color: var(--flame); font-size: clamp(1.8rem, 5vw, 2.6rem);
+       text-shadow: 0 3px 0 var(--wood-dark); margin: 1rem 0 .3rem; }
+  .lede { color: var(--muted); margin-bottom: 1.5rem; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  .panel h2 { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .6rem; font-weight: 700; }
+  label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: .2rem; }
+  label b { color: var(--sand); font-family: "JetBrains Mono", monospace; }
+  input, select { width: 100%; padding: .6rem .7rem; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--deep); color: var(--sand); font-family: "JetBrains Mono", monospace; font-size: 1rem; }
+  input:focus, select:focus { outline: 2px solid var(--torch); outline-offset: 1px; }
+  input.given { border-color: var(--flame); }
+  input.bad { border-color: var(--hibiscus); }
+  button { cursor: pointer; padding: .55rem 1rem; border-radius: 999px; border: 1px solid var(--line); background: transparent;
+    color: var(--sand); font-family: inherit; font-weight: 600; }
+  button:hover { border-color: var(--torch); color: var(--flame); }
+  .fields { display: grid; gap: .7rem 1rem; margin-bottom: 1rem; }
+  .opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding-top: 1rem; border-top: 1px dashed var(--line); margin-bottom: .9rem; }
+  .actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+  .copied { color: var(--leaf); font-weight: 600; align-self: center; opacity: 0; transition: opacity .2s; }
+  .err { color: var(--hibiscus); font-weight: 600; margin-top: .8rem; display: none; }
+  .warn { color: var(--torch); font-weight: 600; margin-top: .6rem; display: none; }
+  .info { color: var(--muted); margin-top: .8rem; }
+  .results { margin-top: 1.25rem; display: grid; grid-template-columns: 1.1fr 1fr; gap: 1rem; }
+  .big { background: var(--deep); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  .big .k { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .3rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td { padding: .4rem .2rem; border-bottom: 1px solid var(--line); }
+  td:first-child { color: var(--muted); }
+  td:first-child b { color: var(--sand); font-family: "JetBrains Mono", monospace; margin-right: .35rem; }
+  td:last-child { text-align: right; font-family: "JetBrains Mono", monospace; cursor: pointer; white-space: nowrap; }
+  td:last-child:hover { color: var(--flame); }
+  td .tag { font-family: "Karla", sans-serif; font-size: .7rem; color: var(--flame); border: 1px solid var(--flame); border-radius: 999px; padding: 0 .4rem; margin-right: .4rem; vertical-align: 1px; }
+  tr.sep td { border-bottom: 1px dashed var(--line); padding: .15rem; }
+  svg.diag { width: 100%; height: auto; display: block; }
+  svg.diag text { font-family: "JetBrains Mono", monospace; font-size: 13px; fill: var(--sand); }
+  .how { margin-top: 2rem; color: var(--muted); }
+  .how h2 { font-family: "Bungee", Impact, sans-serif; color: var(--sand); font-size: 1.15rem; margin-bottom: .5rem; }
+  .how p { margin-bottom: .6rem; }
+  .how code { font-family: "JetBrains Mono", monospace; color: var(--sand); background: var(--deep); padding: .05rem .35rem; border-radius: 4px; }
+  .how a { color: var(--flame); }
+  footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+  .fields.curve { grid-template-columns: repeat(4, 1fr); }
+  .fields.extra { grid-template-columns: 1fr 1.4fr 1.4fr .9fr; }
+  @media (max-width: 760px) {
+    .fields.curve { grid-template-columns: 1fr 1fr; }
+    .fields.extra { grid-template-columns: 1fr 1fr; }
+    .results, .opts { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/">Jolly Tiki</a>
+    <a class="back" href="/">← All tools</a>
+  </header>
+
+  <h1>Circular Curve Solver</h1>
+  <p class="lede">Fill in any two curve values and get the rest. Click any result to copy it.</p>
+
+  <div class="panel">
+    <h2>Curve: fill in any two</h2>
+    <div class="fields curve">
+      <div><label for="f-delta"><b>Δ</b> Delta (central angle)</label><input id="f-delta" spellcheck="false" autocomplete="off" placeholder="45 30 15"></div>
+      <div><label for="f-R"><b>R</b> Radius</label><input id="f-R" inputmode="decimal" autocomplete="off"></div>
+      <div><label for="f-D"><b>D</b> Degree of curve (arc)</label><input id="f-D" spellcheck="false" autocomplete="off" placeholder="5 00 00"></div>
+      <div><label for="f-L"><b>L</b> Arc length</label><input id="f-L" inputmode="decimal" autocomplete="off"></div>
+      <div><label for="f-T"><b>T</b> Tangent</label><input id="f-T" inputmode="decimal" autocomplete="off"></div>
+      <div><label for="f-C"><b>C</b> Long chord</label><input id="f-C" inputmode="decimal" autocomplete="off"></div>
+      <div><label for="f-E"><b>E</b> External</label><input id="f-E" inputmode="decimal" autocomplete="off"></div>
+      <div><label for="f-M"><b>M</b> Middle ordinate</label><input id="f-M" inputmode="decimal" autocomplete="off"></div>
+    </div>
+    <h2>Optional: stationing and bearings</h2>
+    <div class="fields extra">
+      <div>
+        <label for="stType">Station given at</label>
+        <select id="stType"><option value="PI" selected>PI</option><option value="PC">PC</option></select>
+      </div>
+      <div><label for="sta">Station</label><input id="sta" spellcheck="false" autocomplete="off" placeholder="12+34.56"></div>
+      <div><label for="brg">Back tangent (into the PC)</label><input id="brg" spellcheck="false" autocomplete="off" placeholder="N 45-30-15 E"></div>
+      <div>
+        <label for="turn">Curve turns</label>
+        <select id="turn"><option value="R" selected>Right</option><option value="L">Left</option></select>
+      </div>
+    </div>
+    <div class="opts">
+      <div>
+        <label for="plain">Plain numbers for angles mean</label>
+        <select id="plain"><option value="dd" selected>Decimal degrees</option><option value="dms">DD.MMSS (calculator format)</option></select>
+      </div>
+      <div>
+        <label for="dp">Distance decimals</label>
+        <select id="dp"><option value="2" selected>0.01</option><option value="3">0.001</option><option value="4">0.0001</option></select>
+      </div>
+      <div>
+        <label for="sp">Seconds precision</label>
+        <select id="sp"><option value="0" selected>Whole seconds</option><option value="1">Tenths</option><option value="2">Hundredths</option></select>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="copy" type="button">Copy all</button>
+      <button id="example" type="button">Example</button>
+      <button id="clear" type="button">Clear</button>
+      <span class="copied" id="copied">Copied!</span>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="warn" id="warn"></div>
+  </div>
+
+  <div class="results">
+    <div class="big">
+      <div class="k">Curve data</div>
+      <table id="out"></table>
+    </div>
+    <div class="big">
+      <svg class="diag" id="diag" viewBox="0 0 360 300" role="img" aria-label="Sketch of the curve"></svg>
+    </div>
+  </div>
+
+  <div class="how">
+    <h2>How it works</h2>
+    <p>Enter any two of the eight curve values. Angles take any common format: <code>45°30'15"</code>, <code>45 30 15</code>, <code>45-30-15</code> or decimal degrees. Distances can be in feet or meters, as long as you use the same unit throughout.</p>
+    <p><b>Degree of curve</b> uses the arc definition, the central angle for 100 units of arc: <code>D = 5729.578 / R</code>. That's the highway standard in feet.</p>
+    <p>If you give a chord with the radius, the solver assumes the curve is under 180°. A middle ordinate longer than the radius gives a curve over 180°. When you give two lengths and no angle or radius, like an arc length and a chord, it finds Δ by trial and error and assumes a curve under 180°. A tangent with a middle ordinate always fits two different curves, so that pair isn't accepted.</p>
+    <p>For curves over 180°, like a cul-de-sac bulb, enter Δ directly. The tangent and external don't exist past 180°, so they show as —.</p>
+    <p><b>Stationing</b> follows the usual rule: <code>PC = PI − T</code> and <code>PT = PC + L</code>. The PT is stationed along the arc, so it isn't PI + T. <b>Bearings</b> use the back tangent, which is the direction of travel arriving at the PC. Chord bearing = back tangent ± Δ/2, and ahead tangent = back tangent ± Δ.</p>
+  </div>
+
+  <footer>© <span id="yr"></span> jollytiki.com · Provided as-is. Check your work before it goes on a plat.</footer>
+</div>
+
+<script>
+// ===== MATH START =====
+function toNum(s) {
+  if (typeof s === 'number') return s;
+  const t = String(s).replace(/,/g, '').trim();
+  if (t === '' || !/^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(t)) return NaN;
+  return parseFloat(t);
+}
+// Decimal degrees -> D°MM'SS" with carry-safe rounding
+function dms(deg, secDp) {
+  secDp = secDp || 0;
+  const f = Math.pow(10, secDp);
+  let totalSec = Math.round(deg * 3600 * f) / f;
+  let d = Math.floor(totalSec / 3600 + 1e-12);
+  let rem = totalSec - d * 3600;
+  let m = Math.floor(rem / 60 + 1e-12);
+  let s = rem - m * 60;
+  if (s < 0) s = 0;
+  const sStr = s.toFixed(secDp);
+  const sPad = secDp ? sStr.padStart(3 + secDp, '0') : sStr.padStart(2, '0');
+  return d + '°' + String(m).padStart(2, '0') + "'" + sPad + '"';
+}
+function normAz(a) { a = a % 360; if (a < 0) a += 360; return a; }
+// Round an azimuth to display precision (in seconds) and keep it in [0, 360)
+function roundAz(az, secDp) {
+  const f = Math.pow(10, secDp || 0);
+  return normAz(Math.round(az * 3600 * f) / (3600 * f));
+}
+function azDms(az, secDp) { return dms(roundAz(az, secDp), secDp); }
+function bearingFromAz(az, secDp) {
+  // Round first, so 89°59'59.9" displays as N 90°00'00" E instead of landing in the wrong quadrant
+  az = roundAz(az, secDp);
+  let ns, ew, ang;
+  if (az <= 90)       { ns = 'N'; ew = 'E'; ang = az; }
+  else if (az <= 180) { ns = 'S'; ew = 'E'; ang = 180 - az; }
+  else if (az <= 270) { ns = 'S'; ew = 'W'; ang = az - 180; }
+  else                { ns = 'N'; ew = 'W'; ang = 360 - az; }
+  return ns + ' ' + dms(ang, secDp) + ' ' + ew;
+}
+// Signed DMS (dms() handles non-negative values only)
+function sdms(deg, secDp) { return (deg < 0 ? '−' : '') + dms(Math.abs(deg), secDp); }
+// DD.MMSS calculator format, e.g. 45°30'15" -> 45.3015
+function packed(deg, secDp) {
+  secDp = secDp || 0;
+  const f = Math.pow(10, secDp);
+  const neg = deg < 0;
+  const tot = Math.round(Math.abs(deg) * 3600 * f);   // integer units of 1/f seconds
+  const d = Math.floor(tot / (3600 * f));
+  const m = Math.floor((tot - d * 3600 * f) / (60 * f));
+  const sUnits = tot - d * 3600 * f - m * 60 * f;
+  const sWhole = Math.floor(sUnits / f), sFrac = sUnits - sWhole * f;
+  let out = d + '.' + String(m).padStart(2, '0') + String(sWhole).padStart(2, '0');
+  if (secDp) out += String(sFrac).padStart(secDp, '0');
+  return (neg ? '−' : '') + out;
+}
+// Parse DD.MMSS string -> decimal degrees. Returns {deg, warn} or null
+function parsePacked(t) {
+  const m = /^([-+]?)(\d*)(?:\.(\d*))?$/.exec(t);
+  if (!m || (m[2] === '' && !m[3])) return null;
+  const frac = (m[3] || '').padEnd(4, '0');
+  const d = Number(m[2] || 0), mm = Number(frac.slice(0, 2));
+  const ss = Number(frac.slice(2, 4) + '.' + (frac.slice(4) || '0'));
+  const warn = (mm >= 60 || ss >= 60) ? 'Minutes and seconds should be under 60 in DD.MMSS format. Did you mean decimal degrees?' : '';
+  const v = d + mm / 60 + ss / 3600;
+  return { deg: m[1] === '-' ? -v : v, warn };
+}
+// Parse DMS with any separators. Returns {deg, warn} or null
+function parseDms(t) {
+  let sign = 1;
+  t = t.trim();
+  if (/^[-−]/.test(t)) { sign = -1; t = t.slice(1).trim(); }
+  else if (t[0] === '+') t = t.slice(1).trim();
+  const parts = t.split(/\s*(?:°|º|˚|d|deg|'|’|′|m|min|"|”|″|''|s|sec|:|-|\s)+\s*/i).filter(p => p !== '');
+  if (parts.length < 1 || parts.length > 3) return null;
+  if (!parts.every(p => /^(\d+\.?\d*|\.\d+)$/.test(p))) return null;
+  const [d, m = 0, s = 0] = parts.map(Number);
+  let warn = '';
+  if (m >= 60 || s >= 60) warn = 'Minutes and seconds are normally under 60. Check the value you typed.';
+  if (parts.length > 1 && !Number.isInteger(d)) warn = 'Degrees has decimals and minutes too. Check the value you typed.';
+  return { deg: sign * (d + m / 60 + s / 3600), warn };
+}
+// Main parser. mode: how to read a plain number (dd | dms | rad | gon)
+function parseAngle(input, mode) {
+  let t = String(input).trim().replace(/,/g, '');
+  if (t === '') return { empty: true };
+  let bearing = null;
+  const b = /^([NS])\s*(.+?)\s*([EW])$/i.exec(t);
+  if (b) { bearing = { ns: b[1].toUpperCase(), ew: b[3].toUpperCase() }; t = b[2]; }
+  let r, kind;
+  if (/^[-+−]?(\d+\.?\d*|\.\d+)$/.test(t)) {
+    const n = Number(t.replace('−', '-'));
+    if (mode === 'dms') { r = parsePacked(t.replace('−', '-')); kind = 'DD.MMSS'; }
+    else if (mode === 'rad') { r = { deg: n * 180 / Math.PI, warn: '' }; kind = 'radians'; }
+    else if (mode === 'gon') { r = { deg: n * 0.9, warn: '' }; kind = 'gons'; }
+    else { r = { deg: n, warn: '' }; kind = 'decimal degrees'; }
+  } else {
+    r = parseDms(t); kind = 'degrees-minutes-seconds';
+  }
+  if (!r || !isFinite(r.deg)) return { error: "Couldn't read that. Try 45°30'15\", 45 30 15, 45.5 or N 45-30-15 E." };
+  if (bearing) {
+    if (r.deg < 0 || r.deg > 90) return { error: 'A bearing angle has to be between 0° and 90°.' };
+    const a = r.deg;
+    const az = bearing.ns === 'N' ? (bearing.ew === 'E' ? a : 360 - a) : (bearing.ew === 'E' ? 180 - a : 180 + a);
+    return { deg: a, az: normAz(az), kind: 'bearing in ' + kind, warn: r.warn };
+  }
+  return { deg: r.deg, kind, warn: r.warn };
+}
+// deg: the angle to show in DMS/decimal. azIn: direction for bearings (defaults to deg read as an azimuth)
+function convert(deg, secDp, azIn) {
+  const az = roundAz(azIn === undefined ? deg : azIn, secDp);
+  const baz = normAz(az + 180);
+  const dmin = Math.abs(deg) * 60, dd = Math.floor(Math.abs(deg) + 1e-12);
+  return {
+    dms: sdms(deg, secDp),
+    dd: (deg < 0 ? '−' : '') + Math.abs(deg).toFixed(8).replace(/0+$/, '').replace(/\.$/, '') + '°',
+    pk: packed(deg, secDp),
+    az: dms(az, secDp),
+    brg: bearingFromAz(az, secDp),
+    baz: dms(baz, secDp),
+    bb: bearingFromAz(baz, secDp),
+    rad: (deg * Math.PI / 180).toFixed(10),
+    gon: (deg / 0.9).toFixed(6) + ' gon',
+    dm: (deg < 0 ? '−' : '') + dd + '°' + (dmin - dd * 60).toFixed(4).padStart(7, '0') + "'",
+    azDeg: az
+  };
+}
+// ===== MATH END =====
+
+const RAD = Math.PI / 180;
+const CURVE_KEYS = ['delta', 'R', 'D', 'L', 'T', 'C', 'E', 'M'];
+const NAMES = { delta: 'Delta', R: 'Radius', D: 'Degree of curve', L: 'Arc length', T: 'Tangent', C: 'Chord', E: 'External', M: 'Middle ordinate' };
+// Each length as a multiple of R, for central angle d (radians).
+// E and M use the half-angle sine form so very flat curves don't lose precision.
+const sq = x => x * x;
+const F = {
+  L: d => d,
+  T: d => Math.tan(d / 2),
+  C: d => 2 * Math.sin(d / 2),
+  E: d => 2 * sq(Math.sin(d / 4)) / Math.cos(d / 2),
+  M: d => 2 * sq(Math.sin(d / 4))
+};
+// Find d in (0, π) where F[x](d) / F[y](d) = target.
+// Scans for sign changes first, because some pairs (tangent + middle ordinate) can fit two curves.
+// Returns d, NaN (no curve fits) or -1 (two curves fit).
+function solveRatio(x, y, target) {
+  const g = d => Math.log(F[x](d) / F[y](d) / target);
+  const N = 4000, lo = 1e-6, hi = Math.PI - 1e-6, roots = [];
+  let pd = lo, pg = g(lo);
+  for (let i = 1; i <= N; i++) {
+    const d = lo + (hi - lo) * i / N, gd = g(d);
+    if (pg === 0) roots.push([pd, pd]);
+    else if (isFinite(pg) && isFinite(gd) && Math.sign(gd) !== Math.sign(pg) && gd !== 0) roots.push([pd, d]);
+    pd = d; pg = gd;
+  }
+  if (!roots.length) return NaN;
+  if (roots.length > 1) return -1;
+  let [a, b] = roots[0], ga = g(a);
+  for (let i = 0; i < 100 && b - a > 1e-15; i++) {
+    const m = (a + b) / 2, gm = g(m);
+    if (gm === 0) return m;
+    if (Math.sign(gm) === Math.sign(ga)) { a = m; ga = gm; } else b = m;
+  }
+  return (a + b) / 2;
+}
+// k: given values (delta and D in decimal degrees). Returns {R, d} or {error} or {need}
+function solveCurve(k) {
+  const given = CURVE_KEYS.filter(x => k[x] !== undefined);
+  if (given.length < 2) return { need: true, given };
+  if (given.length > 2) return { error: 'Fill in exactly two values. You have ' + given.length + '. Clear the extras.', given };
+  for (const g of given) if (!(k[g] > 0)) return { error: NAMES[g] + ' has to be greater than zero.', given };
+  if (k.R !== undefined && k.D !== undefined) return { error: 'Radius and degree of curve say the same thing. Give one of them plus another value.', given };
+  if (k.delta !== undefined && k.delta >= 360) return { error: 'Delta has to be less than 360°.', given };
+  const v = Object.assign({}, k);
+  if (v.D !== undefined) { v.R = 18000 / (Math.PI * v.D); delete v.D; }
+  let R, d;
+  const lens = Object.keys(v).filter(x => F[x]);
+  if (v.delta !== undefined && v.R !== undefined) { d = v.delta * RAD; R = v.R; }
+  else if (v.delta !== undefined) {
+    d = v.delta * RAD;
+    const x = lens[0];
+    if ((x === 'T' || x === 'E') && v.delta >= 180) return { error: 'Tangent and external don\'t exist for a curve of 180° or more. Use the radius, length, chord or middle ordinate instead.', given };
+    R = v[x] / F[x](d);
+  } else if (v.R !== undefined) {
+    R = v.R;
+    const x = lens[0], q = v[x] / R;
+    if (x === 'L') { d = q; if (d >= 2 * Math.PI) return { error: 'That arc length is a full circle or more for this radius.', given }; }
+    else if (x === 'T') d = 2 * Math.atan(q);
+    else if (x === 'C') { if (q > 2) return { error: 'The chord can\'t be longer than the diameter (2 × R = ' + (2 * R).toFixed(2) + ').', given }; d = 2 * Math.asin(Math.min(q / 2, 1)); }
+    else if (x === 'E') d = 2 * Math.acos(1 / (1 + q));
+    else if (x === 'M') { if (q >= 2) return { error: 'The middle ordinate has to be less than the diameter.', given }; d = 4 * Math.asin(Math.sqrt(q / 2)); }
+  } else {
+    const [x, y] = lens;
+    d = solveRatio(x, y, v[x] / v[y]);
+    if (d === -1) return { error: 'Two different curves fit that ' + NAMES[x].toLowerCase() + ' and ' + NAMES[y].toLowerCase() + '. Give a different pair, like the radius or delta plus one of them.', given };
+    if (!isFinite(d)) return { error: 'Those two values can\'t belong to the same curve (under 180°). Check them.', given };
+    R = v[x] / F[x](d);
+  }
+  if (!isFinite(R) || !isFinite(d) || R <= 0 || d <= 0) return { error: 'Couldn\'t solve that combination. Check the values.', given };
+  return { R, d, given };
+}
+function curveValues(R, d) {
+  const big = d >= Math.PI - 1e-12;
+  return {
+    delta: d / RAD,
+    R,
+    D: 18000 / (Math.PI * R),
+    L: R * d,
+    T: big ? NaN : R * Math.tan(d / 2),
+    C: 2 * R * Math.sin(d / 2),
+    E: big ? NaN : R * F.E(d),
+    M: R * F.M(d),
+    sector: R * R * d / 2,
+    segment: R * R * (d - Math.sin(d)) / 2
+  };
+}
+// "12+34.56" or "1234.56" -> 1234.56
+function parseStation(t) {
+  t = String(t).replace(/,/g, '').trim();
+  if (t === '') return undefined;
+  const m = /^([-+]?)(\d+)\s*\+\s*(\d+(?:\.\d*)?)$/.exec(t);
+  if (m) { const v = Number(m[2]) * 100 + Number(m[3]); return m[1] === '-' ? -v : v; }
+  const n = toNum(t);
+  return isFinite(n) ? n : NaN;
+}
+function fmtStation(v, dp) {
+  const neg = v < 0, f = Math.pow(10, dp);
+  const u = Math.round(Math.abs(v) * f);
+  const hund = Math.floor(u / (100 * f)), rest = (u - hund * 100 * f) / f;
+  return (neg ? '−' : '') + hund + '+' + rest.toFixed(dp).padStart(3 + dp, '0');
+}
+
+if (typeof document !== 'undefined') {
+  const $ = id => document.getElementById(id);
+  let lastText = '';
+
+  function readAngle(id, mode) {
+    const p = parseAngle($(id).value, mode);
+    if (p.empty) return { empty: true };
+    if (p.error) return { error: p.error };
+    if (p.az !== undefined) return { error: 'Enter an angle here, not a bearing.' };
+    return { deg: p.deg, warn: p.warn };
+  }
+  function fmtLen(v, dp) { return isFinite(v) ? v.toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp }) : '—'; }
+
+  function diagram(R, d, turnLeft) {
+    const svg = $('diag'), W = 360, H = 300, pad = 34;
+    if (!R) { svg.innerHTML = '<text x="180" y="150" text-anchor="middle" style="fill:#a9bfb9">Enter two values to see the curve</text>'; return; }
+    const h = d / 2, big = d >= Math.PI - 1e-9;
+    // Unit radius, center at origin, curve symmetric about the y axis, bulging up (math coords)
+    const pts = [];
+    for (let i = 0; i <= 120; i++) { const a = Math.PI / 2 + h - d * i / 120; pts.push([Math.cos(a), Math.sin(a)]); }
+    const PC = pts[0], PT = pts[120];
+    const PI = big ? null : [0, 1 / Math.cos(h)];
+    const showO = d >= 50 * RAD || big;
+    const box = pts.slice(); if (PI) box.push(PI); if (showO) box.push([0, 0]);
+    // Keep small curves readable: frame the area just under the chord too
+    if (!showO) box.push([0, PC[1] - (pts[60][1] - PC[1]) * 0.6]);
+    const xs = box.map(p => p[0]), ys = box.map(p => p[1]);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const s = Math.min((W - 2 * pad) / (x1 - x0 || 1), (H - 2 * pad) / (y1 - y0 || 1));
+    const ox = W / 2 - (x0 + x1) / 2 * s, oy = H / 2 + (y0 + y1) / 2 * s;
+    const flip = turnLeft ? -1 : 1;   // mirror for left-hand curves
+    const P = p => [(W / 2 + (p[0] * s + ox - W / 2) * flip).toFixed(1), (oy - p[1] * s).toFixed(1)];
+    const line = (a, b, st) => { const A = P(a), B = P(b); return '<line x1="' + A[0] + '" y1="' + A[1] + '" x2="' + B[0] + '" y2="' + B[1] + '" ' + st + '/>'; };
+    const lbl = (p, t, dx, dy, st) => { const A = P(p); return '<text x="' + (Number(A[0]) + dx * flip) + '" y="' + (Number(A[1]) + dy) + '" text-anchor="middle" ' + (st || '') + '>' + t + '</text>'; };
+    let out = '<defs><clipPath id="clip"><rect x="0" y="0" width="' + W + '" height="' + H + '"/></clipPath></defs><g clip-path="url(#clip)">';
+    const dash = 'stroke="#1f4b51" stroke-width="1.5" stroke-dasharray="4 4"';
+    // Radii (they run off the frame for flat curves)
+    out += line(PC, [0, 0], dash) + line(PT, [0, 0], dash);
+    out += line(PC, PT, 'stroke="#a9bfb9" stroke-width="1.5" stroke-dasharray="6 4"');
+    if (PI) out += line(PC, PI, 'stroke="#ff8a3d" stroke-width="1.5"') + line(PI, PT, 'stroke="#ff8a3d" stroke-width="1.5"');
+    out += '<polyline fill="none" stroke="#ffc94a" stroke-width="3" points="' + pts.map(p => P(p).join(',')).join(' ') + '"/>';
+    out += '</g>';
+    const dot = p => { const A = P(p); return '<circle cx="' + A[0] + '" cy="' + A[1] + '" r="4.5" fill="#ff8a3d"/>'; };
+    out += dot(PC) + dot(PT);
+    out += lbl(PC, 'PC', -16, 16) + lbl(PT, 'PT', 16, 16);
+    if (PI) out += dot(PI) + lbl(PI, 'PI', 0, -10) + lbl([0, PI[1]], 'Δ', 0, 18, 'style="fill:#ff8a3d"');
+    if (showO) out += '<circle cx="' + P([0, 0])[0] + '" cy="' + P([0, 0])[1] + '" r="3.5" fill="#f4e3c1"/>' + lbl([0, 0], 'O', 0, 18, 'style="fill:#a9bfb9"');
+    out += lbl([(PC[0] + PT[0]) / 2, PC[1]], 'C', 0, 16, 'style="fill:#a9bfb9"');
+    out += lbl(pts[60], 'L', 0, -10, 'style="fill:#ffc94a"');
+    if (showO) out += lbl([PC[0] / 2, PC[1] / 2], 'R', -10, 0, 'style="fill:#a9bfb9"');
+    svg.innerHTML = out;
+  }
+
+  function calc() {
+    const mode = $('plain').value, dp = Number($('dp').value), sp = Number($('sp').value);
+    const k = {}, warns = [];
+    let err = '';
+    CURVE_KEYS.forEach(key => $('f-' + key).classList.remove('given', 'bad'));
+    CURVE_KEYS.forEach(key => {
+      const id = 'f-' + key, raw = $(id).value.trim();
+      if (raw === '') return;
+      if (key === 'delta' || key === 'D') {
+        const a = readAngle(id, mode);
+        if (a.error) { err = err || NAMES[key] + ': ' + a.error; $(id).classList.add('bad'); return; }
+        if (a.warn) warns.push(a.warn);
+        k[key] = a.deg;
+      } else {
+        const n = toNum(raw);
+        if (!isFinite(n)) { err = err || NAMES[key] + ': enter a number.'; $(id).classList.add('bad'); return; }
+        k[key] = n;
+      }
+    });
+    $('err').style.display = 'none'; $('warn').style.display = 'none';
+    const showErr = m => { $('err').textContent = m; $('err').style.display = 'block'; };
+    const blank = () => { $('out').innerHTML = CURVE_KEYS.map(x => '<tr><td><b>' + (x === 'delta' ? 'Δ' : x) + '</b>' + NAMES[x] + '</td><td>—</td></tr>').join(''); diagram(null); lastText = ''; };
+    if (err) { showErr(err); blank(); return; }
+    const sol = solveCurve(k);
+    (sol.given || []).forEach(g => $('f-' + g).classList.add('given'));
+    if (sol.error) { showErr(sol.error); (sol.given || []).forEach(g => $('f-' + g).classList.replace('given', 'bad')); blank(); return; }
+    if (sol.need) { blank(); return; }
+    const c = curveValues(sol.R, sol.d);
+    const given = new Set(sol.given);
+    const tag = x => given.has(x) ? '<span class="tag">given</span>' : '';
+    const rows = [], text = [];
+    const add = (sym, name, val, key) => {
+      rows.push('<tr><td>' + (sym ? '<b>' + sym + '</b>' : '') + name + '</td><td>' + (key ? tag(key) : '') + '<span>' + val + '</span></td></tr>');
+      text.push(name + ': ' + val);
+    };
+    add('Δ', 'Delta', dms(c.delta, sp), 'delta');
+    add('R', 'Radius', fmtLen(c.R, dp), 'R');
+    add('D', 'Degree of curve', dms(c.D, sp), 'D');
+    add('L', 'Arc length', fmtLen(c.L, dp), 'L');
+    add('T', 'Tangent', fmtLen(c.T, dp), 'T');
+    add('C', 'Long chord', fmtLen(c.C, dp), 'C');
+    add('E', 'External', fmtLen(c.E, dp), 'E');
+    add('M', 'Middle ordinate', fmtLen(c.M, dp), 'M');
+    rows.push('<tr class="sep"><td></td><td></td></tr>');
+    add('', 'Sector area', fmtLen(c.sector, dp));
+    add('', 'Segment area (arc to chord)', fmtLen(c.segment, dp));
+
+    // Stationing
+    const st = parseStation($('sta').value);
+    $('sta').classList.toggle('bad', Number.isNaN(st));
+    if (Number.isNaN(st)) warns.push('Couldn\'t read the station. Use 12+34.56 or 1234.56.');
+    else if (st !== undefined) {
+      const isPI = $('stType').value === 'PI';
+      if (isPI && !isFinite(c.T)) warns.push('A curve of 180° or more has no PI. Give the PC station instead.');
+      else {
+        const pc = isPI ? st - c.T : st, pt = pc + c.L;
+        rows.push('<tr class="sep"><td></td><td></td></tr>');
+        if (isFinite(c.T)) add('', 'PI station', fmtStation(pc + c.T, dp));
+        add('', 'PC station', fmtStation(pc, dp));
+        add('', 'PT station', fmtStation(pt, dp));
+      }
+    }
+    // Bearings
+    const b = parseAngle($('brg').value, mode);
+    const turnLeft = $('turn').value === 'L';
+    $('brg').classList.toggle('bad', !!b.error);
+    if (b.error) warns.push('Back tangent: ' + b.error);
+    else if (!b.empty) {
+      const az = b.az !== undefined ? b.az : normAz(b.deg);
+      const sgn = turnLeft ? -1 : 1, dd = c.delta;
+      rows.push('<tr class="sep"><td></td><td></td></tr>');
+      add('', 'Back tangent', bearingFromAz(az, sp));
+      add('', 'Chord bearing (PC → PT)', bearingFromAz(az + sgn * dd / 2, sp));
+      add('', 'Ahead tangent', bearingFromAz(az + sgn * dd, sp));
+      add('', 'Radial, PC → center', bearingFromAz(az + sgn * 90, sp));
+      add('', 'Radial, center → PT', bearingFromAz(az + sgn * dd - sgn * 90, sp));
+    }
+    if (warns.length) { $('warn').textContent = warns[0]; $('warn').style.display = 'block'; }
+    $('out').innerHTML = rows.join('');
+    lastText = text.join('\n');
+    diagram(sol.R, sol.d, turnLeft);
+  }
+
+  document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', calc));
+  function flash() { $('copied').style.opacity = 1; setTimeout(() => $('copied').style.opacity = 0, 1500); }
+  $('out').addEventListener('click', async e => {
+    const td = e.target.closest('td:last-child'); if (!td) return;
+    const span = td.querySelector('span'); const v = span ? span.textContent : '';
+    if (!v || v === '—') return;
+    try { await navigator.clipboard.writeText(v); flash(); } catch (err) {}
+  });
+  $('copy').onclick = async () => { if (!lastText) return; try { await navigator.clipboard.writeText(lastText); flash(); } catch (e) {} };
+  $('clear').onclick = () => { document.querySelectorAll('.panel input').forEach(i => i.value = ''); calc(); $('f-delta').focus(); };
+  $('example').onclick = () => {
+    document.querySelectorAll('.panel input').forEach(i => i.value = '');
+    $('f-delta').value = '45 30 15'; $('f-R').value = '500';
+    $('stType').value = 'PI'; $('sta').value = '12+34.56'; $('brg').value = 'N 30-00-00 E'; $('turn').value = 'R';
+    calc();
+  };
+  $('yr').textContent = new Date().getFullYear();
+  $('example').onclick();
+}
+</script>
+<script data-goatcounter="https://jollytiki.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Traverse Closure &amp; Compass Rule Adjustment | Jolly Tiki</title>
+<meta name="description" content="Free traverse calculator for surveyors: enter bearings and distances, get the error of closure and precision ratio, and adjust the traverse with the Compass (Bowditch) rule.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e; --deep: #071a1d; --panel: #12363b; --line: #1f4b51;
+    --sand: #f4e3c1; --muted: #a9bfb9; --torch: #ff8a3d; --flame: #ffc94a;
+    --hibiscus: #e8475c; --leaf: #2f8f6b; --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #071a1d; }
+  body { font-family: "Karla", system-ui, sans-serif; color: var(--sand); line-height: 1.5;
+    background: radial-gradient(ellipse at 50% -10%, #1d4f55, transparent 55%), linear-gradient(180deg, var(--night), var(--deep) 70%);
+    background-attachment: fixed; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(244,227,193,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,227,193,.035) 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .wrap { position: relative; max-width: 900px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; }
+  .brand { color: var(--flame); font-family: "Bungee", Impact, sans-serif; font-size: 1.2rem; text-decoration: none; }
+  header a.back { color: var(--muted); text-decoration: none; font-weight: 600; }
+  header a.back:hover { color: var(--flame); }
+  h1 { font-family: "Bungee", Impact, sans-serif; color: var(--flame); font-size: clamp(1.8rem, 5vw, 2.6rem);
+       text-shadow: 0 3px 0 var(--wood-dark); margin: 1rem 0 .3rem; }
+  .lede { color: var(--muted); margin-bottom: 1.5rem; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  .panel h2 { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .6rem; font-weight: 700; }
+  label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: .2rem; }
+  label b { color: var(--sand); font-family: "JetBrains Mono", monospace; }
+  input, select { width: 100%; padding: .6rem .7rem; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--deep); color: var(--sand); font-family: "JetBrains Mono", monospace; font-size: 1rem; }
+  input:focus, select:focus { outline: 2px solid var(--torch); outline-offset: 1px; }
+  input.given { border-color: var(--flame); }
+  input.bad { border-color: var(--hibiscus); }
+  button { cursor: pointer; padding: .55rem 1rem; border-radius: 999px; border: 1px solid var(--line); background: transparent;
+    color: var(--sand); font-family: inherit; font-weight: 600; }
+  button:hover { border-color: var(--torch); color: var(--flame); }
+  .fields { display: grid; gap: .7rem 1rem; margin-bottom: 1rem; }
+  .opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding-top: 1rem; border-top: 1px dashed var(--line); margin-bottom: .9rem; }
+  .actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+  .copied { color: var(--leaf); font-weight: 600; align-self: center; opacity: 0; transition: opacity .2s; }
+  .err { color: var(--hibiscus); font-weight: 600; margin-top: .8rem; display: none; }
+  .warn { color: var(--torch); font-weight: 600; margin-top: .6rem; display: none; }
+  .info { color: var(--muted); margin-top: .8rem; }
+  .results { margin-top: 1.25rem; display: grid; grid-template-columns: 1.1fr 1fr; gap: 1rem; }
+  .big { background: var(--deep); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  .big .k { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .3rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td { padding: .4rem .2rem; border-bottom: 1px solid var(--line); }
+  td:first-child { color: var(--muted); }
+  td:first-child b { color: var(--sand); font-family: "JetBrains Mono", monospace; margin-right: .35rem; }
+  td:last-child { text-align: right; font-family: "JetBrains Mono", monospace; cursor: pointer; white-space: nowrap; }
+  td:last-child:hover { color: var(--flame); }
+  td .tag { font-family: "Karla", sans-serif; font-size: .7rem; color: var(--flame); border: 1px solid var(--flame); border-radius: 999px; padding: 0 .4rem; margin-right: .4rem; vertical-align: 1px; }
+  tr.sep td { border-bottom: 1px dashed var(--line); padding: .15rem; }
+  svg.diag { width: 100%; height: auto; display: block; }
+  svg.diag text { font-family: "JetBrains Mono", monospace; font-size: 13px; fill: var(--sand); }
+  .how { margin-top: 2rem; color: var(--muted); }
+  .how h2 { font-family: "Bungee", Impact, sans-serif; color: var(--sand); font-size: 1.15rem; margin-bottom: .5rem; }
+  .how p { margin-bottom: .6rem; }
+  .how code { font-family: "JetBrains Mono", monospace; color: var(--sand); background: var(--deep); padding: .05rem .35rem; border-radius: 4px; }
+  .how a { color: var(--flame); }
+  footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+  .fields.start { grid-template-columns: 1fr 1fr 1.3fr; }
+  .fields.close { grid-template-columns: 1fr 1fr; display: none; }
+  .courses { display: grid; gap: .45rem; margin-bottom: .9rem; }
+  .course { display: grid; grid-template-columns: 2.2rem 1.6fr 1fr 2.4rem; gap: .5rem; align-items: center; }
+  .course .num { font-family: "JetBrains Mono", monospace; color: var(--muted); text-align: right; }
+  .course .del { padding: 0; height: 2.4rem; width: 2.4rem; color: var(--muted); }
+  .chead { display: grid; grid-template-columns: 2.2rem 1.6fr 1fr 2.4rem; gap: .5rem; font-size: .85rem; color: var(--muted); margin-bottom: -.2rem; }
+  .summary { margin-top: 1.25rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .bigv .k { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+  .bigv .v { font-family: "JetBrains Mono", monospace; font-weight: 700; color: var(--flame); font-size: clamp(1.5rem, 4vw, 2.1rem); margin-bottom: .6rem; }
+  .scroll { overflow-x: auto; margin-top: 1rem; }
+  table.wide { font-size: .85rem; white-space: nowrap; }
+  table.wide th { text-align: right; color: var(--muted); font-weight: 600; padding: .4rem .5rem; border-bottom: 1px solid var(--line); font-size: .78rem; }
+  table.wide td { text-align: right; font-family: "JetBrains Mono", monospace; padding: .35rem .5rem; color: var(--sand); cursor: default; }
+  table.wide td:first-child, table.wide th:first-child { text-align: left; }
+  table.wide td.adj { color: var(--flame); }
+  table.wide td.corr { color: var(--muted); }
+  @media (max-width: 680px) { .fields.start, .summary, .opts { grid-template-columns: 1fr; } .course, .chead { grid-template-columns: 1.6rem 1.5fr 1fr 2.2rem; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/">Jolly Tiki</a>
+    <a class="back" href="/">← All tools</a>
+  </header>
+
+  <h1>Traverse Adjustment</h1>
+  <p class="lede">Enter a traverse as bearings and distances. You get the error of closure and precision, and the traverse adjusted by the Compass (Bowditch) rule. Press Enter to move along and add courses.</p>
+
+  <div class="panel">
+    <h2>Start</h2>
+    <div class="fields start">
+      <div><label for="sn">Start northing</label><input id="sn" inputmode="decimal" autocomplete="off" value="5000.000"></div>
+      <div><label for="se">Start easting</label><input id="se" inputmode="decimal" autocomplete="off" value="5000.000"></div>
+      <div>
+        <label for="closeType">The traverse ends</label>
+        <select id="closeType"><option value="loop" selected>Back at the start (loop)</option><option value="known">On another known point</option></select>
+      </div>
+    </div>
+    <div class="fields close" id="closeFields">
+      <div><label for="kn">Known end northing</label><input id="kn" inputmode="decimal" autocomplete="off"></div>
+      <div><label for="ke">Known end easting</label><input id="ke" inputmode="decimal" autocomplete="off"></div>
+    </div>
+    <h2>Courses</h2>
+    <div class="chead"><span></span><span>Bearing</span><span>Distance</span><span></span></div>
+    <div class="courses" id="courses"></div>
+    <div class="opts">
+      <div>
+        <label for="units">Units</label>
+        <select id="units"><option value="ft" selected>Feet (area in acres)</option><option value="m">Meters (area in hectares)</option></select>
+      </div>
+      <div>
+        <label for="dp">Decimals</label>
+        <select id="dp"><option value="2">0.01</option><option value="3" selected>0.001</option><option value="4">0.0001</option></select>
+      </div>
+      <div>
+        <label for="sp">Seconds precision</label>
+        <select id="sp"><option value="0" selected>Whole seconds</option><option value="1">Tenths</option><option value="2">Hundredths</option></select>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="add" type="button">+ Add course</button>
+      <button id="copy" type="button">Copy all</button>
+      <button id="example" type="button">Example</button>
+      <button id="clear" type="button">Clear</button>
+      <span class="copied" id="copied">Copied!</span>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="warn" id="warn"></div>
+  </div>
+
+  <div class="summary">
+    <div class="big">
+      <div class="bigv"><div class="k">Precision</div><div class="v" id="r-prec">—</div></div>
+      <table id="out"></table>
+    </div>
+    <div class="big"><svg class="diag" id="diag" viewBox="0 0 360 320" role="img" aria-label="Sketch of the traverse"></svg></div>
+  </div>
+  <div class="big scroll" id="tableBox" style="display:none">
+    <div class="k" style="font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Adjusted traverse (Compass rule)</div>
+    <table class="wide" id="wide"></table>
+  </div>
+
+  <div class="how">
+    <h2>How it works</h2>
+    <p>Each course is walked out from the start point. The <b>error of closure</b> is the gap between where the last course lands and where it should land: the start point for a loop, or the known point you entered. <b>Precision</b> is the total length divided by that gap, written 1:x.</p>
+    <p>The <b>Compass (Bowditch) rule</b> spreads the error along the traverse in proportion to distance. A point halfway around gets half the correction. The adjusted bearings and distances are inversed from the adjusted coordinates.</p>
+    <p>For a loop, the area comes from the adjusted coordinates. This tool works from bearings. If you have turned angles, the <a href="bearing-angle.html">Angle Between Bearings</a> tool converts between the two. For checking a deed description, try <a href="/#projects">MapCheck</a>.</p>
+  </div>
+
+  <footer>© <span id="yr"></span> jollytiki.com · Provided as-is. Check your work before it goes on a plat.</footer>
+</div>
+
+<script>
+// ===== MATH START =====
+function toNum(s) {
+  if (typeof s === 'number') return s;
+  const t = String(s).replace(/,/g, '').trim();
+  if (t === '' || !/^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(t)) return NaN;
+  return parseFloat(t);
+}
+// Decimal degrees -> D°MM'SS" with carry-safe rounding
+function dms(deg, secDp) {
+  secDp = secDp || 0;
+  const f = Math.pow(10, secDp);
+  let totalSec = Math.round(deg * 3600 * f) / f;
+  let d = Math.floor(totalSec / 3600 + 1e-12);
+  let rem = totalSec - d * 3600;
+  let m = Math.floor(rem / 60 + 1e-12);
+  let s = rem - m * 60;
+  if (s < 0) s = 0;
+  const sStr = s.toFixed(secDp);
+  const sPad = secDp ? sStr.padStart(3 + secDp, '0') : sStr.padStart(2, '0');
+  return d + '°' + String(m).padStart(2, '0') + "'" + sPad + '"';
+}
+function normAz(a) { a = a % 360; if (a < 0) a += 360; return a; }
+// Round an azimuth to display precision (in seconds) and keep it in [0, 360)
+function roundAz(az, secDp) {
+  const f = Math.pow(10, secDp || 0);
+  return normAz(Math.round(az * 3600 * f) / (3600 * f));
+}
+function azDms(az, secDp) { return dms(roundAz(az, secDp), secDp); }
+function bearingFromAz(az, secDp) {
+  // Round first, so 89°59'59.9" displays as N 90°00'00" E instead of landing in the wrong quadrant
+  az = roundAz(az, secDp);
+  let ns, ew, ang;
+  if (az <= 90)       { ns = 'N'; ew = 'E'; ang = az; }
+  else if (az <= 180) { ns = 'S'; ew = 'E'; ang = 180 - az; }
+  else if (az <= 270) { ns = 'S'; ew = 'W'; ang = az - 180; }
+  else                { ns = 'N'; ew = 'W'; ang = 360 - az; }
+  return ns + ' ' + dms(ang, secDp) + ' ' + ew;
+}
+// Signed DMS (dms() handles non-negative values only)
+function sdms(deg, secDp) { return (deg < 0 ? '−' : '') + dms(Math.abs(deg), secDp); }
+// DD.MMSS calculator format, e.g. 45°30'15" -> 45.3015
+function packed(deg, secDp) {
+  secDp = secDp || 0;
+  const f = Math.pow(10, secDp);
+  const neg = deg < 0;
+  const tot = Math.round(Math.abs(deg) * 3600 * f);   // integer units of 1/f seconds
+  const d = Math.floor(tot / (3600 * f));
+  const m = Math.floor((tot - d * 3600 * f) / (60 * f));
+  const sUnits = tot - d * 3600 * f - m * 60 * f;
+  const sWhole = Math.floor(sUnits / f), sFrac = sUnits - sWhole * f;
+  let out = d + '.' + String(m).padStart(2, '0') + String(sWhole).padStart(2, '0');
+  if (secDp) out += String(sFrac).padStart(secDp, '0');
+  return (neg ? '−' : '') + out;
+}
+// Parse DD.MMSS string -> decimal degrees. Returns {deg, warn} or null
+function parsePacked(t) {
+  const m = /^([-+]?)(\d*)(?:\.(\d*))?$/.exec(t);
+  if (!m || (m[2] === '' && !m[3])) return null;
+  const frac = (m[3] || '').padEnd(4, '0');
+  const d = Number(m[2] || 0), mm = Number(frac.slice(0, 2));
+  const ss = Number(frac.slice(2, 4) + '.' + (frac.slice(4) || '0'));
+  const warn = (mm >= 60 || ss >= 60) ? 'Minutes and seconds should be under 60 in DD.MMSS format. Did you mean decimal degrees?' : '';
+  const v = d + mm / 60 + ss / 3600;
+  return { deg: m[1] === '-' ? -v : v, warn };
+}
+// Parse DMS with any separators. Returns {deg, warn} or null
+function parseDms(t) {
+  let sign = 1;
+  t = t.trim();
+  if (/^[-−]/.test(t)) { sign = -1; t = t.slice(1).trim(); }
+  else if (t[0] === '+') t = t.slice(1).trim();
+  const parts = t.split(/\s*(?:°|º|˚|d|deg|'|’|′|m|min|"|”|″|''|s|sec|:|-|\s)+\s*/i).filter(p => p !== '');
+  if (parts.length < 1 || parts.length > 3) return null;
+  if (!parts.every(p => /^(\d+\.?\d*|\.\d+)$/.test(p))) return null;
+  const [d, m = 0, s = 0] = parts.map(Number);
+  let warn = '';
+  if (m >= 60 || s >= 60) warn = 'Minutes and seconds are normally under 60. Check the value you typed.';
+  if (parts.length > 1 && !Number.isInteger(d)) warn = 'Degrees has decimals and minutes too. Check the value you typed.';
+  return { deg: sign * (d + m / 60 + s / 3600), warn };
+}
+// Main parser. mode: how to read a plain number (dd | dms | rad | gon)
+function parseAngle(input, mode) {
+  let t = String(input).trim().replace(/,/g, '');
+  if (t === '') return { empty: true };
+  let bearing = null;
+  const b = /^([NS])\s*(.+?)\s*([EW])$/i.exec(t);
+  if (b) { bearing = { ns: b[1].toUpperCase(), ew: b[3].toUpperCase() }; t = b[2]; }
+  let r, kind;
+  if (/^[-+−]?(\d+\.?\d*|\.\d+)$/.test(t)) {
+    const n = Number(t.replace('−', '-'));
+    if (mode === 'dms') { r = parsePacked(t.replace('−', '-')); kind = 'DD.MMSS'; }
+    else if (mode === 'rad') { r = { deg: n * 180 / Math.PI, warn: '' }; kind = 'radians'; }
+    else if (mode === 'gon') { r = { deg: n * 0.9, warn: '' }; kind = 'gons'; }
+    else { r = { deg: n, warn: '' }; kind = 'decimal degrees'; }
+  } else {
+    r = parseDms(t); kind = 'degrees-minutes-seconds';
+  }
+  if (!r || !isFinite(r.deg)) return { error: "Couldn't read that. Try 45°30'15\", 45 30 15, 45.5 or N 45-30-15 E." };
+  if (bearing) {
+    if (r.deg < 0 || r.deg > 90) return { error: 'A bearing angle has to be between 0° and 90°.' };
+    const a = r.deg;
+    const az = bearing.ns === 'N' ? (bearing.ew === 'E' ? a : 360 - a) : (bearing.ew === 'E' ? 180 - a : 180 + a);
+    return { deg: a, az: normAz(az), kind: 'bearing in ' + kind, warn: r.warn };
+  }
+  return { deg: r.deg, kind, warn: r.warn };
+}
+// deg: the angle to show in DMS/decimal. azIn: direction for bearings (defaults to deg read as an azimuth)
+function convert(deg, secDp, azIn) {
+  const az = roundAz(azIn === undefined ? deg : azIn, secDp);
+  const baz = normAz(az + 180);
+  const dmin = Math.abs(deg) * 60, dd = Math.floor(Math.abs(deg) + 1e-12);
+  return {
+    dms: sdms(deg, secDp),
+    dd: (deg < 0 ? '−' : '') + Math.abs(deg).toFixed(8).replace(/0+$/, '').replace(/\.$/, '') + '°',
+    pk: packed(deg, secDp),
+    az: dms(az, secDp),
+    brg: bearingFromAz(az, secDp),
+    baz: dms(baz, secDp),
+    bb: bearingFromAz(baz, secDp),
+    rad: (deg * Math.PI / 180).toFixed(10),
+    gon: (deg / 0.9).toFixed(6) + ' gon',
+    dm: (deg < 0 ? '−' : '') + dd + '°' + (dmin - dd * 60).toFixed(4).padStart(7, '0') + "'",
+    azDeg: az
+  };
+}
+// ===== MATH END =====
+// ===== SHARED HELPERS =====
+const RAD = Math.PI / 180;
+function fmtLen(v, dp) {
+  return isFinite(v) ? v.toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp }) : '—';
+}
+function fmtNE(v, dp) { return isFinite(v) ? v.toFixed(dp) : '—'; }
+// Read a direction: a quadrant bearing, or a plain angle taken as an azimuth from north
+function readDir(text, mode) {
+  const p = parseAngle(text, mode);
+  if (p.empty || p.error) return p;
+  return { az: p.az !== undefined ? p.az : normAz(p.deg), warn: p.warn, bearing: p.az !== undefined };
+}
+// undefined = blank, NaN = not a number
+function readNum(text) {
+  const t = String(text).trim();
+  return t === '' ? undefined : toNum(t);
+}
+// Inverse between two N/E points
+function inverse(n1, e1, n2, e2) {
+  const dn = n2 - n1, de = e2 - e1;
+  return { dist: Math.hypot(dn, de), az: normAz(Math.atan2(de, dn) / RAD) };
+}
+// "12+34.56" or "1234.56" -> 1234.56
+function parseStation(t) {
+  t = String(t).replace(/,/g, '').trim();
+  if (t === '') return undefined;
+  const m = /^([-+]?)(\d+)\s*\+\s*(\d+(?:\.\d*)?)$/.exec(t);
+  if (m) { const v = Number(m[2]) * 100 + Number(m[3]); return m[1] === '-' ? -v : v; }
+  const n = toNum(t);
+  return isFinite(n) ? n : NaN;
+}
+function fmtStation(v, dp) {
+  const neg = v < 0, f = Math.pow(10, dp);
+  const u = Math.round(Math.abs(v) * f);
+  const hund = Math.floor(u / (100 * f)), rest = (u - hund * 100 * f) / f;
+  return (neg ? '−' : '') + hund + '+' + rest.toFixed(dp).padStart(3 + dp, '0');
+}
+// Fit N/E points into a W×H box, north up, equal scale. Returns p => [x, y]
+function fitter(pts, W, H, pad) {
+  const ns = pts.map(p => p[0]), es = pts.map(p => p[1]);
+  const n0 = Math.min(...ns), n1 = Math.max(...ns), e0 = Math.min(...es), e1 = Math.max(...es);
+  const s = Math.min((W - 2 * pad) / ((e1 - e0) || 1), (H - 2 * pad) / ((n1 - n0) || 1));
+  const cx = (e0 + e1) / 2, cy = (n0 + n1) / 2;
+  return p => [W / 2 + (p[1] - cx) * s, H / 2 - (p[0] - cy) * s];
+}
+const svgEsc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+function svgLine(a, b, st) { return '<line x1="' + a[0].toFixed(1) + '" y1="' + a[1].toFixed(1) + '" x2="' + b[0].toFixed(1) + '" y2="' + b[1].toFixed(1) + '" ' + st + '/>'; }
+function svgDot(a, r, fill) { return '<circle cx="' + a[0].toFixed(1) + '" cy="' + a[1].toFixed(1) + '" r="' + r + '" fill="' + fill + '"/>'; }
+function svgText(a, t, dx, dy, st, anchor) { return '<text x="' + (a[0] + dx).toFixed(1) + '" y="' + (a[1] + dy).toFixed(1) + '" text-anchor="' + (anchor || 'middle') + '" ' + (st || '') + '>' + svgEsc(t) + '</text>'; }
+// Result rows: [label, value, given?] -> table HTML. A null row is a separator.
+function tableRows(rows) {
+  return rows.map(r => r === null ? '<tr class="sep"><td></td><td></td></tr>'
+    : '<tr><td>' + r[0] + '</td><td>' + (r[2] ? '<span class="tag">given</span>' : '') + '<span>' + svgEsc(r[1]) + '</span></td></tr>').join('');
+}
+function rowsText(rows) { return rows.filter(r => r).map(r => r[0].replace(/<[^>]+>/g, '') + ': ' + r[1]).join('\n'); }
+// Click a result to copy it; the Copy all button copies getText()
+function setupCopy(getText) {
+  const flash = () => { const c = document.getElementById('copied'); c.style.opacity = 1; setTimeout(() => c.style.opacity = 0, 1500); };
+  const copy = async t => { try { await navigator.clipboard.writeText(t); flash(); } catch (e) {} };
+  document.addEventListener('click', e => {
+    const td = e.target.closest('.big td:not(:first-child)'); if (!td) return;
+    const span = td.querySelector('span:last-child'); const v = span ? span.textContent : td.textContent;
+    if (v && v !== '—') copy(v);
+  });
+  const btn = document.getElementById('copy');
+  if (btn) btn.onclick = () => { const t = getText(); if (t) copy(t); };
+}
+function showMsg(id, msg) { const el = document.getElementById(id); el.textContent = msg || ''; el.style.display = msg ? 'block' : 'none'; }
+// ===== SHARED HELPERS END =====
+
+// Walk the courses out from (n0, e0). courses: [{az, dist}]
+function walk(n0, e0, courses) {
+  const pts = [{ n: n0, e: e0 }];
+  courses.forEach(c => { const p = pts[pts.length - 1]; pts.push({ n: p.n + c.dist * Math.cos(c.az * RAD), e: p.e + c.dist * Math.sin(c.az * RAD) }); });
+  return pts;
+}
+// Compass rule, ported from SurveyMath.calculateTraverseClosure (survey-app-tauri/src/js/math.js)
+function compassAdjust(pts, fixedN, fixedE) {
+  const end = pts[pts.length - 1];
+  const dn = end.n - fixedN, de = end.e - fixedE;
+  const linearError = Math.hypot(dn, de);
+  const cum = [0];
+  let perimeter = 0;
+  for (let i = 0; i < pts.length - 1; i++) { perimeter += Math.hypot(pts[i + 1].n - pts[i].n, pts[i + 1].e - pts[i].e); cum.push(perimeter); }
+  if (perimeter === 0) return { error: 'The traverse has no length.' };
+  const adjusted = pts.map((p, i) => {
+    const corrN = -dn * cum[i] / perimeter, corrE = -de * cum[i] / perimeter;
+    return { n: p.n, e: p.e, corrN, corrE, adjN: p.n + corrN, adjE: p.e + corrE };
+  });
+  return { dn, de, linearError, perimeter, ratio: linearError > 1e-9 ? perimeter / linearError : Infinity, adjusted };
+}
+// Shoelace area of a closed figure
+function polyArea(pts) {
+  let s = 0;
+  for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length]; s += a.e * b.n - b.e * a.n; }
+  return Math.abs(s) / 2;
+}
+
+const EXAMPLE = [['N 12-15-30 E', '251.36'], ['S 84-40-15 E', '312.48'], ['S 08-22-45 W', '276.10'], ['N 80-06-17 W', '329.22']];
+
+if (typeof document !== 'undefined') {
+  const $ = id => document.getElementById(id);
+  const box = $('courses');
+  let lastText = '';
+
+  function addCourse(brg, dist, focus) {
+    const row = document.createElement('div');
+    row.className = 'course';
+    row.innerHTML = '<span class="num"></span><input class="b" spellcheck="false" autocomplete="off" aria-label="Bearing" placeholder="N 45-30-15 E">' +
+      '<input class="d" inputmode="decimal" autocomplete="off" aria-label="Distance" placeholder="250.00">' +
+      '<button type="button" class="del" aria-label="Remove course" title="Remove course">✕</button>';
+    const b = row.querySelector('.b'), d = row.querySelector('.d');
+    b.value = brg || ''; d.value = dist || '';
+    [b, d].forEach(el => el.addEventListener('input', calc));
+    b.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); d.focus(); } });
+    d.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      const next = row.nextElementSibling;
+      if (next) next.querySelector('.b').focus(); else addCourse('', '', true);
+    });
+    row.querySelector('.del').onclick = () => { if (box.children.length > 1) row.remove(); else { b.value = ''; d.value = ''; } calc(); };
+    box.appendChild(row);
+    if (focus) b.focus();
+    calc();
+  }
+
+  function diagram(raw, adj, loop, known) {
+    const svg = $('diag'), W = 360, H = 320;
+    if (!raw) { svg.innerHTML = '<text x="180" y="160" text-anchor="middle" style="fill:#a9bfb9">Enter some courses</text>'; return; }
+    const all = raw.map(p => [p.n, p.e]).concat(adj.map(p => [p.adjN, p.adjE]));
+    if (known) all.push(known);
+    const F = fitter(all, W, H, 28);
+    const poly = (ps, st) => '<polyline fill="none" ' + st + ' points="' + ps.map(p => F(p).map(v => v.toFixed(1)).join(',')).join(' ') + '"/>';
+    let o = poly(raw.map(p => [p.n, p.e]), 'stroke="#a9bfb9" stroke-width="1.5" stroke-dasharray="5 4"');
+    o += poly(adj.map(p => [p.adjN, p.adjE]), 'stroke="#ffc94a" stroke-width="2.5" stroke-linejoin="round"');
+    adj.forEach((p, i) => { if (i < adj.length - 1 || !loop) o += svgDot(F([p.adjN, p.adjE]), 3.5, '#ff8a3d'); });
+    o += svgDot(F([raw[0].n, raw[0].e]), 6, '#f4e3c1') + svgText(F([raw[0].n, raw[0].e]), 'Start', 0, -11, 'style="font-weight:700"');
+    if (known) o += svgDot(F(known), 6, '#2f8f6b') + svgText(F(known), 'End', 0, -11, 'style="font-weight:700;fill:#2f8f6b"');
+    o += '<text x="8" y="' + (H - 8) + '" style="fill:#a9bfb9;font-size:11px">- - - as measured   ── adjusted</text>';
+    svg.innerHTML = o;
+  }
+
+  function calc() {
+    const dp = Number($('dp').value), sp = Number($('sp').value), loop = $('closeType').value === 'loop';
+    $('closeFields').style.display = loop ? 'none' : 'grid';
+    const errs = [], warns = [];
+    const num = id => { const v = readNum($(id).value); $(id).classList.toggle('bad', Number.isNaN(v)); return v; };
+    const sn = num('sn'), se = num('se'), kn = loop ? 0 : num('kn'), ke = loop ? 0 : num('ke');
+    if ([sn, se, kn, ke].some(v => Number.isNaN(v))) errs.push('Coordinates have to be numbers.');
+    const courses = [];
+    [...box.children].forEach((row, i) => {
+      row.querySelector('.num').textContent = i + 1;
+      const b = row.querySelector('.b'), d = row.querySelector('.d');
+      const dir = readDir(b.value, 'dd'), dist = readNum(d.value);
+      b.classList.toggle('bad', !!dir.error); d.classList.toggle('bad', Number.isNaN(dist) || dist < 0);
+      if (dir.error) errs.push('Course ' + (i + 1) + ' bearing: ' + dir.error);
+      if (Number.isNaN(dist) || dist < 0) errs.push('Course ' + (i + 1) + ' distance: enter a positive number.');
+      if (dir.warn) warns.push(dir.warn);
+      if (dir.empty && dist === undefined) return;
+      if (dir.empty || dist === undefined) { warns.push('Course ' + (i + 1) + ' needs both a bearing and a distance.'); return; }
+      if (!dir.error && !Number.isNaN(dist)) courses.push({ az: dir.az, dist, i: i + 1 });
+    });
+    showMsg('err', errs[0]); showMsg('warn', warns[0]);
+    const blank = () => { $('r-prec').textContent = '—'; $('out').innerHTML = ''; $('tableBox').style.display = 'none'; diagram(null); lastText = ''; };
+    if (errs.length || sn === undefined || se === undefined || !courses.length) return blank();
+    if (!loop && (kn === undefined || ke === undefined)) { showMsg('warn', 'Enter the known end point, or switch to a loop.'); return blank(); }
+    const raw = walk(sn, se, courses);
+    const fixN = loop ? sn : kn, fixE = loop ? se : ke;
+    const r = compassAdjust(raw, fixN, fixE);
+    if (r.error) { showMsg('err', r.error); return blank(); }
+    $('r-prec').textContent = isFinite(r.ratio) ? '1:' + Math.round(r.ratio).toLocaleString('en-US') : 'Perfect';
+    const errAz = inverse(fixN, fixE, raw[raw.length - 1].n, raw[raw.length - 1].e).az;
+    const rows = [
+      ['Error of closure', fmtLen(r.linearError, dp)],
+      ['Error in northing', (r.dn >= 0 ? '+' : '−') + fmtLen(Math.abs(r.dn), dp)],
+      ['Error in easting', (r.de >= 0 ? '+' : '−') + fmtLen(Math.abs(r.de), dp)],
+      ['Direction of error', r.linearError > 1e-9 ? bearingFromAz(errAz, sp) : '—'],
+      ['Total length', fmtLen(r.perimeter, dp)],
+      ['Courses', String(courses.length)]
+    ];
+    if (loop && courses.length >= 3) {
+      const area = polyArea(r.adjusted.slice(0, -1).map(p => ({ n: p.adjN, e: p.adjE })));
+      const metric = $('units').value === 'm';
+      rows.push(null, ['Area (adjusted)', fmtLen(area, 2) + (metric ? ' m²' : ' sq ft')], [metric ? 'Hectares' : 'Acres', fmtLen(area / (metric ? 10000 : 43560), 4)]);
+    }
+    $('out').innerHTML = tableRows(rows);
+    // Wide table
+    const A = r.adjusted;
+    let h = '<tr><th>Point</th><th>Bearing</th><th>Distance</th><th>Northing</th><th>Easting</th><th>Corr. N</th><th>Corr. E</th><th>Adj. northing</th><th>Adj. easting</th><th>Adj. bearing</th><th>Adj. distance</th></tr>';
+    const csv = [['Point', 'Bearing', 'Distance', 'Northing', 'Easting', 'Corr N', 'Corr E', 'Adj northing', 'Adj easting', 'Adj bearing', 'Adj distance'].join('\t')];
+    A.forEach((p, i) => {
+      const c = i > 0 ? courses[i - 1] : null;
+      const inv = i > 0 ? inverse(A[i - 1].adjN, A[i - 1].adjE, p.adjN, p.adjE) : null;
+      const name = i === 0 ? 'Start' : (i === A.length - 1 ? (loop ? 'Start' : 'End') : String(i));
+      const cells = [name, c ? bearingFromAz(c.az, sp) : '', c ? fmtNE(c.dist, dp) : '', fmtNE(p.n, dp), fmtNE(p.e, dp),
+        (p.corrN >= 0 ? '+' : '') + p.corrN.toFixed(dp), (p.corrE >= 0 ? '+' : '') + p.corrE.toFixed(dp),
+        fmtNE(p.adjN, dp), fmtNE(p.adjE, dp), inv ? bearingFromAz(inv.az, sp) : '', inv ? fmtNE(inv.dist, dp) : ''];
+      h += '<tr>' + cells.map((v, k) => '<td class="' + (k >= 7 ? 'adj' : k >= 5 ? 'corr' : '') + '">' + svgEsc(v) + '</td>').join('') + '</tr>';
+      csv.push(cells.join('\t'));
+    });
+    $('wide').innerHTML = h;
+    $('tableBox').style.display = 'block';
+    diagram(raw, A, loop, loop ? null : [kn, ke]);
+    lastText = 'Precision: ' + $('r-prec').textContent + '\n' + rowsText(rows) + '\n\n' + csv.join('\n');
+  }
+
+  ['sn', 'se', 'kn', 'ke', 'closeType', 'units', 'dp', 'sp'].forEach(id => $(id).addEventListener('input', calc));
+  $('add').onclick = () => addCourse('', '', true);
+  setupCopy(() => lastText);
+  $('clear').onclick = () => { box.innerHTML = ''; $('kn').value = ''; $('ke').value = ''; addCourse('', '', true); };
+  $('example').onclick = () => {
+    box.innerHTML = '';
+    $('sn').value = '5000.000'; $('se').value = '5000.000'; $('closeType').value = 'loop';
+    EXAMPLE.forEach(([b, d]) => addCourse(b, d));
+  };
+  $('example').onclick();
+}
+
+if (typeof document !== 'undefined') document.getElementById('yr').textContent = new Date().getFullYear();
+</script>
+<script data-goatcounter="https://jollytiki.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

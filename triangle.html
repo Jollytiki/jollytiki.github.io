@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Triangle Solver — Sides, Angles &amp; Area | Jolly Tiki</title>
+<meta name="description" content="Free triangle calculator for surveyors: enter any three sides and angles (SSS, SAS, ASA, AAS or SSA) and get the rest, with angles in degrees-minutes-seconds and the area.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e; --deep: #071a1d; --panel: #12363b; --line: #1f4b51;
+    --sand: #f4e3c1; --muted: #a9bfb9; --torch: #ff8a3d; --flame: #ffc94a;
+    --hibiscus: #e8475c; --leaf: #2f8f6b; --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #071a1d; }
+  body { font-family: "Karla", system-ui, sans-serif; color: var(--sand); line-height: 1.5;
+    background: radial-gradient(ellipse at 50% -10%, #1d4f55, transparent 55%), linear-gradient(180deg, var(--night), var(--deep) 70%);
+    background-attachment: fixed; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(244,227,193,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,227,193,.035) 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .wrap { position: relative; max-width: 900px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; }
+  .brand { color: var(--flame); font-family: "Bungee", Impact, sans-serif; font-size: 1.2rem; text-decoration: none; }
+  header a.back { color: var(--muted); text-decoration: none; font-weight: 600; }
+  header a.back:hover { color: var(--flame); }
+  h1 { font-family: "Bungee", Impact, sans-serif; color: var(--flame); font-size: clamp(1.8rem, 5vw, 2.6rem);
+       text-shadow: 0 3px 0 var(--wood-dark); margin: 1rem 0 .3rem; }
+  .lede { color: var(--muted); margin-bottom: 1.5rem; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  .panel h2 { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .6rem; font-weight: 700; }
+  label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: .2rem; }
+  label b { color: var(--sand); font-family: "JetBrains Mono", monospace; }
+  input, select { width: 100%; padding: .6rem .7rem; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--deep); color: var(--sand); font-family: "JetBrains Mono", monospace; font-size: 1rem; }
+  input:focus, select:focus { outline: 2px solid var(--torch); outline-offset: 1px; }
+  input.given { border-color: var(--flame); }
+  input.bad { border-color: var(--hibiscus); }
+  button { cursor: pointer; padding: .55rem 1rem; border-radius: 999px; border: 1px solid var(--line); background: transparent;
+    color: var(--sand); font-family: inherit; font-weight: 600; }
+  button:hover { border-color: var(--torch); color: var(--flame); }
+  .fields { display: grid; gap: .7rem 1rem; margin-bottom: 1rem; }
+  .opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding-top: 1rem; border-top: 1px dashed var(--line); margin-bottom: .9rem; }
+  .actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+  .copied { color: var(--leaf); font-weight: 600; align-self: center; opacity: 0; transition: opacity .2s; }
+  .err { color: var(--hibiscus); font-weight: 600; margin-top: .8rem; display: none; }
+  .warn { color: var(--torch); font-weight: 600; margin-top: .6rem; display: none; }
+  .info { color: var(--muted); margin-top: .8rem; }
+  .results { margin-top: 1.25rem; display: grid; grid-template-columns: 1.1fr 1fr; gap: 1rem; }
+  .big { background: var(--deep); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+  .big .k { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .3rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td { padding: .4rem .2rem; border-bottom: 1px solid var(--line); }
+  td:first-child { color: var(--muted); }
+  td:first-child b { color: var(--sand); font-family: "JetBrains Mono", monospace; margin-right: .35rem; }
+  td:last-child { text-align: right; font-family: "JetBrains Mono", monospace; cursor: pointer; white-space: nowrap; }
+  td:last-child:hover { color: var(--flame); }
+  td .tag { font-family: "Karla", sans-serif; font-size: .7rem; color: var(--flame); border: 1px solid var(--flame); border-radius: 999px; padding: 0 .4rem; margin-right: .4rem; vertical-align: 1px; }
+  tr.sep td { border-bottom: 1px dashed var(--line); padding: .15rem; }
+  svg.diag { width: 100%; height: auto; display: block; }
+  svg.diag text { font-family: "JetBrains Mono", monospace; font-size: 13px; fill: var(--sand); }
+  .how { margin-top: 2rem; color: var(--muted); }
+  .how h2 { font-family: "Bungee", Impact, sans-serif; color: var(--sand); font-size: 1.15rem; margin-bottom: .5rem; }
+  .how p { margin-bottom: .6rem; }
+  .how code { font-family: "JetBrains Mono", monospace; color: var(--sand); background: var(--deep); padding: .05rem .35rem; border-radius: 4px; }
+  .how a { color: var(--flame); }
+  footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+  .fields.tri { grid-template-columns: repeat(3, 1fr); }
+  .sol { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1rem; align-items: center; }
+  #sols { margin-top: 1.25rem; display: grid; gap: 1rem; }
+  .big .k b { color: var(--flame); }
+  @media (max-width: 680px) {
+    .fields.tri { grid-template-columns: 1fr 1fr 1fr; gap: .6rem; }
+    .sol, .opts { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/">Jolly Tiki</a>
+    <a class="back" href="/">← All tools</a>
+  </header>
+
+  <h1>Triangle Solver</h1>
+  <p class="lede">Fill in any three values, with at least one side, and get the rest of the triangle. Side <b>a</b> is opposite angle <b>A</b>, and so on. Click any result to copy it.</p>
+
+  <div class="panel">
+    <div class="fields tri">
+      <div><label for="s0">Side <b>a</b></label><input id="s0" inputmode="decimal" autocomplete="off"></div>
+      <div><label for="s1">Side <b>b</b></label><input id="s1" inputmode="decimal" autocomplete="off"></div>
+      <div><label for="s2">Side <b>c</b></label><input id="s2" inputmode="decimal" autocomplete="off"></div>
+      <div><label for="a0">Angle <b>A</b></label><input id="a0" spellcheck="false" autocomplete="off" placeholder="45 30 15"></div>
+      <div><label for="a1">Angle <b>B</b></label><input id="a1" spellcheck="false" autocomplete="off"></div>
+      <div><label for="a2">Angle <b>C</b></label><input id="a2" spellcheck="false" autocomplete="off"></div>
+    </div>
+    <div class="opts">
+      <div>
+        <label for="plain">Plain numbers for angles mean</label>
+        <select id="plain"><option value="dd" selected>Decimal degrees</option><option value="dms">DD.MMSS (calculator format)</option></select>
+      </div>
+      <div>
+        <label for="dp">Distance decimals</label>
+        <select id="dp"><option value="2" selected>0.01</option><option value="3">0.001</option><option value="4">0.0001</option></select>
+      </div>
+      <div>
+        <label for="sp">Seconds precision</label>
+        <select id="sp"><option value="0" selected>Whole seconds</option><option value="1">Tenths</option><option value="2">Hundredths</option></select>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="copy" type="button">Copy all</button>
+      <button id="example" type="button">Example</button>
+      <button id="clear" type="button">Clear</button>
+      <span class="copied" id="copied">Copied!</span>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="warn" id="warn"></div>
+    <div class="info" id="info"></div>
+  </div>
+
+  <div id="sols"></div>
+
+  <div class="how">
+    <h2>How it works</h2>
+    <p>Give three of the six values, with at least one side. Three angles alone fix the shape of a triangle but not its size. Angles take any common format: <code>45°30'15"</code>, <code>45 30 15</code>, <code>45-30-15</code> or decimal degrees.</p>
+    <p><b>SSS</b> (three sides) and <b>SAS</b> (two sides and the angle between them) use the law of cosines. <b>ASA</b> and <b>AAS</b> (two angles and a side) find the third angle from the 180° total, then use the law of sines.</p>
+    <p><b>SSA</b> (two sides and an angle that isn't between them) is the ambiguous case. Depending on the numbers there can be no triangle, one, or two. When two triangles fit, both are shown, and you have to pick the one that matches the field.</p>
+    <p>Area comes from <code>½ · b · c · sin A</code>. Heights are measured from each vertex square to the opposite side.</p>
+  </div>
+
+  <footer>© <span id="yr"></span> jollytiki.com · Provided as-is. Check your work before it goes on a plat.</footer>
+</div>
+
+<script>
+// ===== MATH START =====
+function toNum(s) {
+  if (typeof s === 'number') return s;
+  const t = String(s).replace(/,/g, '').trim();
+  if (t === '' || !/^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(t)) return NaN;
+  return parseFloat(t);
+}
+// Decimal degrees -> D°MM'SS" with carry-safe rounding
+function dms(deg, secDp) {
+  secDp = secDp || 0;
+  const f = Math.pow(10, secDp);
+  let totalSec = Math.round(deg * 3600 * f) / f;
+  let d = Math.floor(totalSec / 3600 + 1e-12);
+  let rem = totalSec - d * 3600;
+  let m = Math.floor(rem / 60 + 1e-12);
+  let s = rem - m * 60;
+  if (s < 0) s = 0;
+  const sStr = s.toFixed(secDp);
+  const sPad = secDp ? sStr.padStart(3 + secDp, '0') : sStr.padStart(2, '0');
+  return d + '°' + String(m).padStart(2, '0') + "'" + sPad + '"';
+}
+function normAz(a) { a = a % 360; if (a < 0) a += 360; return a; }
+// Round an azimuth to display precision (in seconds) and keep it in [0, 360)
+function roundAz(az, secDp) {
+  const f = Math.pow(10, secDp || 0);
+  return normAz(Math.round(az * 3600 * f) / (3600 * f));
+}
+function azDms(az, secDp) { return dms(roundAz(az, secDp), secDp); }
+function bearingFromAz(az, secDp) {
+  // Round first, so 89°59'59.9" displays as N 90°00'00" E instead of landing in the wrong quadrant
+  az = roundAz(az, secDp);
+  let ns, ew, ang;
+  if (az <= 90)       { ns = 'N'; ew = 'E'; ang = az; }
+  else if (az <= 180) { ns = 'S'; ew = 'E'; ang = 180 - az; }
+  else if (az <= 270) { ns = 'S'; ew = 'W'; ang = az - 180; }
+  else                { ns = 'N'; ew = 'W'; ang = 360 - az; }
+  return ns + ' ' + dms(ang, secDp) + ' ' + ew;
+}
+// Signed DMS (dms() handles non-negative values only)
+function sdms(deg, secDp) { return (deg < 0 ? '−' : '') + dms(Math.abs(deg), secDp); }
+// DD.MMSS calculator format, e.g. 45°30'15" -> 45.3015
+function packed(deg, secDp) {
+  secDp = secDp || 0;
+  const f = Math.pow(10, secDp);
+  const neg = deg < 0;
+  const tot = Math.round(Math.abs(deg) * 3600 * f);   // integer units of 1/f seconds
+  const d = Math.floor(tot / (3600 * f));
+  const m = Math.floor((tot - d * 3600 * f) / (60 * f));
+  const sUnits = tot - d * 3600 * f - m * 60 * f;
+  const sWhole = Math.floor(sUnits / f), sFrac = sUnits - sWhole * f;
+  let out = d + '.' + String(m).padStart(2, '0') + String(sWhole).padStart(2, '0');
+  if (secDp) out += String(sFrac).padStart(secDp, '0');
+  return (neg ? '−' : '') + out;
+}
+// Parse DD.MMSS string -> decimal degrees. Returns {deg, warn} or null
+function parsePacked(t) {
+  const m = /^([-+]?)(\d*)(?:\.(\d*))?$/.exec(t);
+  if (!m || (m[2] === '' && !m[3])) return null;
+  const frac = (m[3] || '').padEnd(4, '0');
+  const d = Number(m[2] || 0), mm = Number(frac.slice(0, 2));
+  const ss = Number(frac.slice(2, 4) + '.' + (frac.slice(4) || '0'));
+  const warn = (mm >= 60 || ss >= 60) ? 'Minutes and seconds should be under 60 in DD.MMSS format. Did you mean decimal degrees?' : '';
+  const v = d + mm / 60 + ss / 3600;
+  return { deg: m[1] === '-' ? -v : v, warn };
+}
+// Parse DMS with any separators. Returns {deg, warn} or null
+function parseDms(t) {
+  let sign = 1;
+  t = t.trim();
+  if (/^[-−]/.test(t)) { sign = -1; t = t.slice(1).trim(); }
+  else if (t[0] === '+') t = t.slice(1).trim();
+  const parts = t.split(/\s*(?:°|º|˚|d|deg|'|’|′|m|min|"|”|″|''|s|sec|:|-|\s)+\s*/i).filter(p => p !== '');
+  if (parts.length < 1 || parts.length > 3) return null;
+  if (!parts.every(p => /^(\d+\.?\d*|\.\d+)$/.test(p))) return null;
+  const [d, m = 0, s = 0] = parts.map(Number);
+  let warn = '';
+  if (m >= 60 || s >= 60) warn = 'Minutes and seconds are normally under 60. Check the value you typed.';
+  if (parts.length > 1 && !Number.isInteger(d)) warn = 'Degrees has decimals and minutes too. Check the value you typed.';
+  return { deg: sign * (d + m / 60 + s / 3600), warn };
+}
+// Main parser. mode: how to read a plain number (dd | dms | rad | gon)
+function parseAngle(input, mode) {
+  let t = String(input).trim().replace(/,/g, '');
+  if (t === '') return { empty: true };
+  let bearing = null;
+  const b = /^([NS])\s*(.+?)\s*([EW])$/i.exec(t);
+  if (b) { bearing = { ns: b[1].toUpperCase(), ew: b[3].toUpperCase() }; t = b[2]; }
+  let r, kind;
+  if (/^[-+−]?(\d+\.?\d*|\.\d+)$/.test(t)) {
+    const n = Number(t.replace('−', '-'));
+    if (mode === 'dms') { r = parsePacked(t.replace('−', '-')); kind = 'DD.MMSS'; }
+    else if (mode === 'rad') { r = { deg: n * 180 / Math.PI, warn: '' }; kind = 'radians'; }
+    else if (mode === 'gon') { r = { deg: n * 0.9, warn: '' }; kind = 'gons'; }
+    else { r = { deg: n, warn: '' }; kind = 'decimal degrees'; }
+  } else {
+    r = parseDms(t); kind = 'degrees-minutes-seconds';
+  }
+  if (!r || !isFinite(r.deg)) return { error: "Couldn't read that. Try 45°30'15\", 45 30 15, 45.5 or N 45-30-15 E." };
+  if (bearing) {
+    if (r.deg < 0 || r.deg > 90) return { error: 'A bearing angle has to be between 0° and 90°.' };
+    const a = r.deg;
+    const az = bearing.ns === 'N' ? (bearing.ew === 'E' ? a : 360 - a) : (bearing.ew === 'E' ? 180 - a : 180 + a);
+    return { deg: a, az: normAz(az), kind: 'bearing in ' + kind, warn: r.warn };
+  }
+  return { deg: r.deg, kind, warn: r.warn };
+}
+// deg: the angle to show in DMS/decimal. azIn: direction for bearings (defaults to deg read as an azimuth)
+function convert(deg, secDp, azIn) {
+  const az = roundAz(azIn === undefined ? deg : azIn, secDp);
+  const baz = normAz(az + 180);
+  const dmin = Math.abs(deg) * 60, dd = Math.floor(Math.abs(deg) + 1e-12);
+  return {
+    dms: sdms(deg, secDp),
+    dd: (deg < 0 ? '−' : '') + Math.abs(deg).toFixed(8).replace(/0+$/, '').replace(/\.$/, '') + '°',
+    pk: packed(deg, secDp),
+    az: dms(az, secDp),
+    brg: bearingFromAz(az, secDp),
+    baz: dms(baz, secDp),
+    bb: bearingFromAz(baz, secDp),
+    rad: (deg * Math.PI / 180).toFixed(10),
+    gon: (deg / 0.9).toFixed(6) + ' gon',
+    dm: (deg < 0 ? '−' : '') + dd + '°' + (dmin - dd * 60).toFixed(4).padStart(7, '0') + "'",
+    azDeg: az
+  };
+}
+// ===== MATH END =====
+
+const RAD = Math.PI / 180;
+const EPS = 1e-9;
+// Fill in the rest from all three angles plus one known side k
+function fromAngles(s, A, k) {
+  const ratio = s[k] / Math.sin(A[k] * RAD);
+  return [0, 1, 2].map(i => i === k ? s[k] : ratio * Math.sin(A[i] * RAD));
+}
+// Angles from three sides (law of cosines); the third comes from 180° so they always total exactly 180
+function anglesFromSides(s) {
+  const ang = i => { const [x, y, z] = [s[i], s[(i + 1) % 3], s[(i + 2) % 3]];
+    return Math.acos(Math.max(-1, Math.min(1, (y * y + z * z - x * x) / (2 * y * z)))) / RAD; };
+  const A0 = ang(0), A1 = ang(1);
+  return [A0, A1, 180 - A0 - A1];
+}
+// s, A: arrays of 3 (undefined = unknown; angles in degrees). Returns {sols:[{s,A}], kind} or {error} or {need}
+function solveTriangle(s, A) {
+  const ks = [0, 1, 2].filter(i => s[i] !== undefined), ka = [0, 1, 2].filter(i => A[i] !== undefined);
+  const n = ks.length + ka.length;
+  if (n < 3) return { need: true };
+  if (n > 3) return { error: 'Fill in exactly three values. You have ' + n + '. Clear the extras.' };
+  if (ks.some(i => !(s[i] > 0))) return { error: 'Sides have to be greater than zero.' };
+  if (ka.some(i => !(A[i] > 0 && A[i] < 180))) return { error: 'Angles have to be between 0° and 180°.' };
+  if (ks.length === 0) return { error: 'Three angles give the shape but not the size. Replace one angle with a side.' };
+  const S = s.slice(), An = A.slice();
+  if (ks.length === 3) {
+    const [a, b, c] = S;
+    if (a + b <= c * (1 + EPS) || a + c <= b * (1 + EPS) || b + c <= a * (1 + EPS))
+      return { error: 'Those sides don\'t make a triangle. Each side has to be shorter than the other two added together.' };
+    return { kind: 'SSS', sols: [{ s: S, A: anglesFromSides(S) }] };
+  }
+  if (ka.length === 2) {
+    const sum = An[ka[0]] + An[ka[1]];
+    if (sum >= 180 - EPS) return { error: 'The two angles add up to 180° or more, so there\'s no room for the third.' };
+    const third = [0, 1, 2].find(i => An[i] === undefined);
+    An[third] = 180 - sum;
+    return { kind: ks[0] === third ? 'ASA' : 'AAS', sols: [{ s: fromAngles(S, An, ks[0]), A: An }] };
+  }
+  // One angle, two sides
+  const k = ka[0];
+  if (S[k] === undefined) {
+    // SAS: the angle is between the two known sides
+    const [i, j] = ks;
+    S[k] = Math.sqrt(S[i] * S[i] + S[j] * S[j] - 2 * S[i] * S[j] * Math.cos(An[k] * RAD));
+    return { kind: 'SAS', sols: [{ s: S, A: anglesFromSides(S) }] };
+  }
+  // SSA: angle k with its opposite side known, plus side j
+  const j = ks.find(i => i !== k), m = 3 - k - j;
+  const sinJ = S[j] * Math.sin(An[k] * RAD) / S[k];
+  if (sinJ > 1 + 1e-12) return { error: 'No triangle fits. Side ' + 'abc'[k] + ' is too short to reach across from angle ' + 'ABC'[k] + '.' };
+  const base = Math.asin(Math.min(1, sinJ)) / RAD;
+  const cands = [base];
+  // Right-angle case: the two candidates are the same triangle (float error can leave base a hair under 90)
+  if (Math.abs(base - 90) > 1e-6) cands.push(180 - base);
+  const sols = [];
+  cands.forEach(Aj => {
+    const Am = 180 - An[k] - Aj;
+    if (Am <= EPS) return;
+    const ang = [0, 0, 0]; ang[k] = An[k]; ang[j] = Aj; ang[m] = Am;
+    sols.push({ s: fromAngles(S, ang, k), A: ang });
+  });
+  if (!sols.length) return { error: 'No triangle fits those values.' };
+  return { kind: 'SSA', sols };
+}
+function extras(t) {
+  const [a, b, c] = t.s;
+  const area = 0.5 * b * c * Math.sin(t.A[0] * RAD);
+  return { area, perim: a + b + c, h: [2 * area / a, 2 * area / b, 2 * area / c] };
+}
+
+if (typeof document !== 'undefined') {
+  const $ = id => document.getElementById(id);
+  let lastText = '';
+  const KIND = {
+    SSS: 'Three sides (SSS)', SAS: 'Two sides and the angle between them (SAS)',
+    ASA: 'Two angles and the side between them (ASA)', AAS: 'Two angles and a side (AAS)',
+    SSA: 'Two sides and an angle not between them (SSA)'
+  };
+  function fmtLen(v, dp) { return isFinite(v) ? v.toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp }) : '—'; }
+
+  function diagram(t, given) {
+    const [a, b, c] = t.s, W = 340, H = 240, pad = 30;
+    // Side c along the bottom, A on the left
+    const V = [[0, 0], [c, 0], [b * Math.cos(t.A[0] * RAD), b * Math.sin(t.A[0] * RAD)]];
+    const xs = V.map(p => p[0]), ys = V.map(p => p[1]);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const sc = Math.min((W - 2 * pad) / (x1 - x0), (H - 2 * pad) / ((y1 - y0) || 1));
+    const ox = (W - (x1 - x0) * sc) / 2 - x0 * sc, oy = (H + (y1 - y0) * sc) / 2 + y0 * sc;
+    const P = p => [p[0] * sc + ox, oy - p[1] * sc];
+    const Q = V.map(P);
+    const cx = (Q[0][0] + Q[1][0] + Q[2][0]) / 3, cy = (Q[0][1] + Q[1][1] + Q[2][1]) / 3;
+    let o = '<polygon points="' + Q.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ') + '" fill="rgba(255,201,74,.07)" stroke="#ffc94a" stroke-width="2.5" stroke-linejoin="round"/>';
+    const away = (p, d) => { const dx = p[0] - cx, dy = p[1] - cy, L = Math.hypot(dx, dy) || 1; return [p[0] + dx / L * d, p[1] + dy / L * d + 4]; };
+    // Vertex i is A, B, C; the side opposite vertex i runs between the other two
+    Q.forEach((p, i) => {
+      const L = away(p, 16), col = given.A[i] ? '#ffc94a' : '#f4e3c1';
+      o += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="4" fill="#ff8a3d"/>';
+      o += '<text x="' + L[0].toFixed(1) + '" y="' + L[1].toFixed(1) + '" text-anchor="middle" style="fill:' + col + ';font-weight:700">' + 'ABC'[i] + '</text>';
+      const p1 = Q[(i + 1) % 3], p2 = Q[(i + 2) % 3], mid = [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2], M = away(mid, 14);
+      o += '<text x="' + M[0].toFixed(1) + '" y="' + M[1].toFixed(1) + '" text-anchor="middle" style="fill:' + (given.s[i] ? '#ffc94a' : '#a9bfb9') + '">' + 'abc'[i] + '</text>';
+    });
+    return '<svg class="diag" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Sketch of the triangle">' + o + '</svg>';
+  }
+
+  function calc() {
+    const mode = $('plain').value, dp = Number($('dp').value), sp = Number($('sp').value);
+    const s = [], A = [], warns = [];
+    let err = '';
+    for (let i = 0; i < 3; i++) {
+      const si = $('s' + i), ai = $('a' + i);
+      si.classList.remove('given', 'bad'); ai.classList.remove('given', 'bad');
+      if (si.value.trim() !== '') {
+        const n = toNum(si.value);
+        if (!isFinite(n)) { err = err || 'Side ' + 'abc'[i] + ': enter a number.'; si.classList.add('bad'); }
+        else { s[i] = n; si.classList.add('given'); }
+      }
+      const p = parseAngle(ai.value, mode);
+      if (p.error || p.az !== undefined) { err = err || 'Angle ' + 'ABC'[i] + ': ' + (p.error || 'enter an angle, not a bearing.'); ai.classList.add('bad'); }
+      else if (!p.empty) { A[i] = p.deg; ai.classList.add('given'); if (p.warn) warns.push(p.warn); }
+    }
+    $('err').style.display = 'none'; $('warn').style.display = 'none'; $('info').textContent = '';
+    $('sols').innerHTML = ''; lastText = '';
+    const showErr = m => { $('err').textContent = m; $('err').style.display = 'block'; };
+    if (err) { showErr(err); return; }
+    const r = solveTriangle(s, A);
+    if (r.need) { $('info').textContent = 'Fill in ' + (3 - s.filter(x => x !== undefined).length - A.filter(x => x !== undefined).length) + ' more.'; return; }
+    if (r.error) { showErr(r.error); document.querySelectorAll('input.given').forEach(i => i.classList.replace('given', 'bad')); return; }
+    if (warns.length) { $('warn').textContent = warns[0]; $('warn').style.display = 'block'; }
+    $('info').textContent = KIND[r.kind] + (r.sols.length > 1 ? '. Two triangles fit these values.' : '.');
+    const given = { s: [0, 1, 2].map(i => s[i] !== undefined), A: [0, 1, 2].map(i => A[i] !== undefined) };
+    const tag = g => g ? '<span class="tag">given</span>' : '';
+    const texts = [];
+    r.sols.forEach((t, n) => {
+      const x = extras(t), text = [];
+      let rows = '';
+      const add = (sym, name, val, g) => { rows += '<tr><td>' + (sym ? '<b>' + sym + '</b>' : '') + name + '</td><td>' + tag(g) + '<span>' + val + '</span></td></tr>'; text.push(name + (sym ? ' ' + sym : '') + ': ' + val); };
+      for (let i = 0; i < 3; i++) add('abc'[i], 'Side', fmtLen(t.s[i], dp), given.s[i]);
+      for (let i = 0; i < 3; i++) add('ABC'[i], 'Angle', dms(t.A[i], sp), given.A[i]);
+      rows += '<tr class="sep"><td></td><td></td></tr>';
+      add('', 'Area', fmtLen(x.area, dp));
+      add('', 'Perimeter', fmtLen(x.perim, dp));
+      for (let i = 0; i < 3; i++) add('', 'Height from ' + 'ABC'[i] + ' to ' + 'abc'[i], fmtLen(x.h[i], dp));
+      const title = r.sols.length > 1 ? 'Triangle <b>' + (n + 1) + '</b> of 2' : 'Solution';
+      $('sols').insertAdjacentHTML('beforeend', '<div class="big sol"><div><div class="k">' + title + '</div><table>' + rows + '</table></div><div>' + diagram(t, given) + '</div></div>');
+      texts.push((r.sols.length > 1 ? 'Triangle ' + (n + 1) + '\n' : '') + text.join('\n'));
+    });
+    lastText = texts.join('\n\n');
+  }
+
+  document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', calc));
+  function flash() { $('copied').style.opacity = 1; setTimeout(() => $('copied').style.opacity = 0, 1500); }
+  $('sols').addEventListener('click', async e => {
+    const td = e.target.closest('td:last-child'); if (!td) return;
+    const span = td.querySelector('span'); const v = span ? span.textContent : '';
+    if (!v || v === '—') return;
+    try { await navigator.clipboard.writeText(v); flash(); } catch (err) {}
+  });
+  $('copy').onclick = async () => { if (!lastText) return; try { await navigator.clipboard.writeText(lastText); flash(); } catch (e) {} };
+  $('clear').onclick = () => { document.querySelectorAll('.panel input').forEach(i => i.value = ''); calc(); $('s0').focus(); };
+  $('example').onclick = () => {
+    document.querySelectorAll('.panel input').forEach(i => i.value = '');
+    $('s1').value = '250.00'; $('s2').value = '310.50'; $('a0').value = '62 15 30';
+    calc();
+  };
+  $('yr').textContent = new Date().getFullYear();
+  $('example').onclick();
+}
+</script>
+<script data-goatcounter="https://jollytiki.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
