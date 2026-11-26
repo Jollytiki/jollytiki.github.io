@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Running a Level Loop, Step by Step | Jolly Tiki</title>
+<meta name="description" content="A worked differential leveling example: reduce a level loop by the HI method, run the arithmetic check, judge and adjust the misclosure, and do a two-peg test.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e; --deep: #071a1d; --panel: #12363b; --line: #1f4b51;
+    --sand: #f4e3c1; --muted: #a9bfb9; --torch: #ff8a3d; --flame: #ffc94a;
+    --hibiscus: #e8475c; --leaf: #2f8f6b; --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #071a1d; }
+  body { font-family: "Karla", system-ui, sans-serif; color: var(--sand); line-height: 1.65;
+    background: radial-gradient(ellipse at 50% -10%, #1d4f55, transparent 55%), linear-gradient(180deg, var(--night), var(--deep) 70%);
+    background-attachment: fixed; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(244,227,193,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,227,193,.035) 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .wrap { position: relative; max-width: 760px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; }
+  .brand { color: var(--flame); font-family: "Bungee", Impact, sans-serif; font-size: 1.2rem; text-decoration: none; }
+  header a.back { color: var(--muted); text-decoration: none; font-weight: 600; }
+  header a.back:hover { color: var(--flame); }
+
+  .eyebrow { font-family: "JetBrains Mono", monospace; font-size: .78rem; letter-spacing: .14em; color: var(--torch); text-transform: uppercase; margin-top: 1.5rem; }
+  h1 { font-family: "Bungee", Impact, sans-serif; color: var(--flame); font-size: clamp(1.8rem, 5vw, 2.5rem); line-height: 1.1;
+       text-shadow: 0 3px 0 var(--wood-dark); margin: .4rem 0 .8rem; }
+  .lede { font-size: 1.15rem; color: var(--sand); opacity: .92; margin-bottom: 1.5rem; }
+  article h2 { font-family: "Bungee", Impact, sans-serif; color: var(--sand); font-size: 1.2rem; letter-spacing: .02em; margin: 2.2rem 0 .6rem; }
+  article h3 { color: var(--flame); font-size: 1.05rem; margin: 1.4rem 0 .3rem; }
+  article p { margin-bottom: .9rem; color: var(--sand); opacity: .9; }
+  article ul, article ol { margin: 0 0 1rem 1.3rem; color: var(--sand); opacity: .9; }
+  article li { margin-bottom: .35rem; }
+  article strong { color: var(--flame); font-weight: 700; }
+  code { font-family: "JetBrains Mono", monospace; font-size: .88em; color: var(--sand); background: var(--deep); padding: .05rem .35rem; border-radius: 4px; }
+  .formula { font-family: "JetBrains Mono", monospace; background: var(--deep); border: 1px solid var(--line); border-radius: 10px;
+             padding: .9rem 1.1rem; margin: 0 0 1rem; color: var(--flame); overflow-x: auto; white-space: pre; line-height: 1.6; }
+  .callout { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--torch); border-radius: 0 10px 10px 0;
+             padding: .9rem 1.1rem; margin: 1.2rem 0; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .k { font-family: "JetBrains Mono", monospace; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--torch); display: block; margin-bottom: .3rem; }
+  .tablewrap { overflow-x: auto; margin: 0 0 1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td, th { padding: .45rem .5rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+  td.num { font-family: "JetBrains Mono", monospace; white-space: nowrap; }
+  .more { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+  .more h2 { font-family: "Bungee", Impact, sans-serif; font-size: 1rem; color: var(--sand); margin-bottom: .6rem; }
+  .more a { display: block; color: var(--muted); text-decoration: none; padding: .3rem 0; font-weight: 600; }
+  .more a:hover { color: var(--flame); }
+  footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/">Jolly Tiki</a>
+    <a class="back" href="/#notes">← Field Notes</a>
+  </header>
+<article>
+  <div class="eyebrow">Field Notes · Leveling</div>
+  <h1>Running a level loop, step by step</h1>
+  <p class="lede">Take one short loop from the field book to adjusted elevations: work out each height of instrument, check the math, judge the misclosure and spread it. Then the field habits that keep it small.</p>
+
+  <p>This note works one loop by hand, the same one that loads when you press <strong>Example</strong> in the <a href="../levels.html" style="color:var(--flame)">Level Loop</a> tool.</p>
+
+  <h2>The words</h2>
+  <ul>
+    <li><strong>Benchmark (BM):</strong> a point with a known elevation.</li>
+    <li><strong>Backsight (BS):</strong> a rod reading on a point whose elevation you know. It's a plus sight.</li>
+    <li><strong>Height of instrument (HI):</strong> the elevation of the level's line of sight. <code>HI = elevation + BS</code>.</li>
+    <li><strong>Foresight (FS):</strong> a rod reading on a point whose elevation you want. It's a minus sight. <code>Elevation = HI − FS</code>.</li>
+    <li><strong>Turning point (TP):</strong> a solid point you take a foresight on, then a backsight on after moving the level. It carries the elevation forward.</li>
+    <li><strong>Side shot:</strong> a foresight on a point you don't turn on, like a floor slab or an invert. It doesn't carry anything forward.</li>
+  </ul>
+
+  <h2>The example loop</h2>
+  <p>Start on BM-1, elevation 100.00, and come back to it. On the way, pick up a floor slab elevation. Here's the field book:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Point</th><th>BS (+)</th><th>FS (−)</th></tr>
+    <tr><td>BM-1</td><td class="num">4.52</td><td></td></tr>
+    <tr><td>TP1</td><td class="num">5.10</td><td class="num">3.21</td></tr>
+    <tr><td>Floor slab</td><td></td><td class="num">6.02</td></tr>
+    <tr><td>TP2</td><td class="num">3.77</td><td class="num">2.88</td></tr>
+    <tr><td>BM-1</td><td></td><td class="num">7.32</td></tr>
+  </table></div>
+  <p>Each reading goes on the row of the point it was read on. TP1 has both readings: a foresight from the first setup, then a backsight from the second.</p>
+
+  <h2>Step 1: Work down the page</h2>
+  <p>Alternate the two rules. A backsight makes a new HI, and a foresight comes off the current HI:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Point</th><th>BS</th><th>HI</th><th>FS</th><th>Elevation</th><th>Work</th></tr>
+    <tr><td>BM-1</td><td class="num">4.52</td><td class="num">104.52</td><td></td><td class="num">100.00</td><td class="num">100.00 + 4.52</td></tr>
+    <tr><td>TP1</td><td class="num">5.10</td><td class="num">106.41</td><td class="num">3.21</td><td class="num">101.31</td><td class="num">104.52 − 3.21, then + 5.10</td></tr>
+    <tr><td>Floor slab</td><td></td><td></td><td class="num">6.02</td><td class="num">100.39</td><td class="num">106.41 − 6.02</td></tr>
+    <tr><td>TP2</td><td class="num">3.77</td><td class="num">107.30</td><td class="num">2.88</td><td class="num">103.53</td><td class="num">106.41 − 2.88, then + 3.77</td></tr>
+    <tr><td>BM-1</td><td></td><td></td><td class="num">7.32</td><td class="num">99.98</td><td class="num">107.30 − 7.32</td></tr>
+  </table></div>
+  <p>The floor slab was read from the second setup, so it comes off TP1's HI. It doesn't change the HI, and the level stays put for TP2.</p>
+
+  <h2>Step 2: The arithmetic check</h2>
+  <p>Add up the backsights and the foresights. Leave out side shots, since they don't carry the elevation anywhere:</p>
+  <div class="formula">ΣBS = 4.52 + 5.10 + 3.77        = 13.39
+ΣFS = 3.21 + 2.88 + 7.32        = 13.41
+ΣBS − ΣFS                       = −0.02
+Ending elev − starting elev     = 99.98 − 100.00 = −0.02  ✓</div>
+  <p>If the two don't match, there's an addition or subtraction mistake in the book. Passing only proves the arithmetic. It says nothing about whether the readings were any good.</p>
+
+  <h2>Step 3: The misclosure</h2>
+  <p>The loop came back to BM-1 at 99.98. It should be 100.00, so the misclosure is −0.02 ft. Whether that's acceptable depends on how far you went. The usual test is a constant times the square root of the distance:</p>
+  <div class="formula">Allowable misclosure = k × √(distance)</div>
+  <p>The Federal Geodetic Control Subcommittee's vertical standards range from 4 mm√K for First Order, Class I down to 12 mm√K for Third Order, where K is the loop length in kilometers. Third Order works out to about <code>0.05 ft × √miles</code>, which is a common target for construction and topo work. If this loop is about a quarter mile around, the allowance is <code>0.05 × √0.25 = 0.025</code> ft, and 0.02 passes. Your client or agency may set its own number, so check.</p>
+  <p>A loop that misses by a tenth or more isn't error to adjust out. It's a misread foot, a bumped tripod or a turning point that moved. Rerun it.</p>
+
+  <h2>Step 4: Adjust it</h2>
+  <p>Each setup adds about the same amount of error, so spread the misclosure evenly by setup. There were 3 setups, so the correction is <code>+0.02 ÷ 3 = +0.0067</code> ft per setup. Each point gets the correction for the setup it was read from, added up:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Point</th><th>Read from setup</th><th>Elevation</th><th>Correction</th><th>Adjusted</th></tr>
+    <tr><td>BM-1</td><td class="num">—</td><td class="num">100.00</td><td class="num">0.000</td><td class="num">100.00</td></tr>
+    <tr><td>TP1</td><td class="num">1</td><td class="num">101.31</td><td class="num">+0.007</td><td class="num">101.32</td></tr>
+    <tr><td>Floor slab</td><td class="num">2</td><td class="num">100.39</td><td class="num">+0.013</td><td class="num">100.40</td></tr>
+    <tr><td>TP2</td><td class="num">2</td><td class="num">103.53</td><td class="num">+0.013</td><td class="num">103.54</td></tr>
+    <tr><td>BM-1</td><td class="num">3</td><td class="num">99.98</td><td class="num">+0.020</td><td class="num">100.00</td></tr>
+  </table></div>
+  <p>The closing benchmark lands back on 100.00 exactly. If your sight lengths vary a lot from setup to setup, distribute by distance instead. Points then get a share of the correction in proportion to how far along the loop they are.</p>
+
+  <div class="callout"><span class="k">Close on something else when you can</span><p>A loop that closes on the benchmark it started on checks the field work, but it can't catch a wrong starting elevation. If BM-1 was really 100.20, every elevation is 0.20 off and the loop still closes. Tie to a second benchmark when one's nearby, and make sure both are on the datum the job calls for (usually NAVD 88 today).</p></div>
+
+  <h2>Field habits that keep the error small</h2>
+  <h3>Balance your sights</h3>
+  <p>Keep each backsight and its foresight about the same length. Pace them off. If the level's line of sight tilts a little, the error grows with distance, and on equal sights it's the same on both readings, so it cancels. The same goes for the earth's curvature and atmospheric refraction, which together drop the rod reading by about <code>0.0206 × M²</code> ft, where M is the sight length in thousands of feet. That's 0.002 ft at 300 ft and 0.021 ft at 1,000 ft. Balanced sights cancel that too.</p>
+
+  <h3>Do a two-peg test</h3>
+  <p>The two-peg test checks how much the line of sight tilts. Set two solid points, A and B, about 200 ft apart.</p>
+  <ol>
+    <li>Set up exactly halfway between them and read both. Say A is 4.62 and B is 3.18. The true difference is <code>4.62 − 3.18 = 1.44</code>, since any tilt error is the same on both equal sights.</li>
+    <li>Move the level right next to A and read both again. Say A is 4.85, so B <em>should</em> read <code>4.85 − 1.44 = 3.41</code>.</li>
+    <li>If B actually reads 3.44, the line of sight is off by 0.03 ft in 200 ft, or 0.015 ft per 100 ft, pointing upward.</li>
+  </ol>
+  <p>On a setup with a 50 ft backsight and a 150 ft foresight, that tilt puts 0.015 ft of error in the result, the same size as this whole loop's misclosure. Have the level adjusted, or keep your sights balanced until it is. Check your firm's or the maker's tolerance for how much is too much. Run the test when you get a new level, after it takes a knock, and on a regular schedule.</p>
+
+  <h3>The rest</h3>
+  <ul>
+    <li><strong>Plumb the rod.</strong> A leaning rod always reads high. With no rod level, have the rod person rock it slowly toward and away from the level and take the lowest reading.</li>
+    <li><strong>Use solid turning points.</strong> A turning point has to stay put while the level moves. Use a turning pin, a rock or a curb, not soft ground or a car bumper.</li>
+    <li><strong>Keep sights short in heat.</strong> Heat shimmer near the ground makes the rod hard to read. Shorten the sights and keep the line of sight well above the ground.</li>
+    <li><strong>Read, record, check.</strong> Call the reading back before the rod moves. Most busts are a misread foot or a transposed digit, like 4.25 written for 4.52.</li>
+  </ul>
+</article>
+  <div class="more">
+    <h2>More field notes</h2>
+    <a href="curve-layout.html">Laying out a curve, step by step →</a> <a href="traverse-adjustment.html">Traverse adjustment, step by step →</a> <a href="grid-to-ground.html">Grid to ground, step by step →</a> <a href="coordinate-systems.html">Coordinate systems without the headache →</a> <a href="civil3d-survey-figures.html">Civil 3D survey figure tips →</a> <a href="old-surveys.html">How they surveyed it back then →</a>
+  </div>
+  <footer>© <span id="yr"></span> jollytiki.com · General information, not legal or professional advice. Check your state's rules and your own work.</footer>
+</div>
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+<script data-goatcounter="https://jollytiki.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
