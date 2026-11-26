@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merging Surfaces in Civil 3D, Step by Step | Jolly Tiki</title>
+<meta name="description" content="How to merge a topo survey and LiDAR into one existing-ground surface in Civil 3D with Paste Surface: datum checks, paste order, seam cleanup and QC.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e; --deep: #071a1d; --panel: #12363b; --line: #1f4b51;
+    --sand: #f4e3c1; --muted: #a9bfb9; --torch: #ff8a3d; --flame: #ffc94a;
+    --hibiscus: #e8475c; --leaf: #2f8f6b; --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #071a1d; }
+  body { font-family: "Karla", system-ui, sans-serif; color: var(--sand); line-height: 1.65;
+    background: radial-gradient(ellipse at 50% -10%, #1d4f55, transparent 55%), linear-gradient(180deg, var(--night), var(--deep) 70%);
+    background-attachment: fixed; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(244,227,193,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,227,193,.035) 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .wrap { position: relative; max-width: 760px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; }
+  .brand { color: var(--flame); font-family: "Bungee", Impact, sans-serif; font-size: 1.2rem; text-decoration: none; }
+  header a.back { color: var(--muted); text-decoration: none; font-weight: 600; }
+  header a.back:hover { color: var(--flame); }
+
+  .eyebrow { font-family: "JetBrains Mono", monospace; font-size: .78rem; letter-spacing: .14em; color: var(--torch); text-transform: uppercase; margin-top: 1.5rem; }
+  h1 { font-family: "Bungee", Impact, sans-serif; color: var(--flame); font-size: clamp(1.8rem, 5vw, 2.5rem); line-height: 1.1;
+       text-shadow: 0 3px 0 var(--wood-dark); margin: .4rem 0 .8rem; }
+  .lede { font-size: 1.15rem; color: var(--sand); opacity: .92; margin-bottom: 1.5rem; }
+  article h2 { font-family: "Bungee", Impact, sans-serif; color: var(--sand); font-size: 1.2rem; letter-spacing: .02em; margin: 2.2rem 0 .6rem; }
+  article h3 { color: var(--flame); font-size: 1.05rem; margin: 1.4rem 0 .3rem; }
+  article p { margin-bottom: .9rem; color: var(--sand); opacity: .9; }
+  article ul, article ol { margin: 0 0 1rem 1.3rem; color: var(--sand); opacity: .9; }
+  article li { margin-bottom: .35rem; }
+  article strong { color: var(--flame); font-weight: 700; }
+  code { font-family: "JetBrains Mono", monospace; font-size: .88em; color: var(--sand); background: var(--deep); padding: .05rem .35rem; border-radius: 4px; }
+  .formula { font-family: "JetBrains Mono", monospace; background: var(--deep); border: 1px solid var(--line); border-radius: 10px;
+             padding: .9rem 1.1rem; margin: 0 0 1rem; color: var(--flame); overflow-x: auto; white-space: pre; line-height: 1.6; }
+  .callout { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--torch); border-radius: 0 10px 10px 0;
+             padding: .9rem 1.1rem; margin: 1.2rem 0; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .k { font-family: "JetBrains Mono", monospace; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--torch); display: block; margin-bottom: .3rem; }
+  .tablewrap { overflow-x: auto; margin: 0 0 1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td, th { padding: .45rem .5rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+  td.num { font-family: "JetBrains Mono", monospace; white-space: nowrap; }
+  .more { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+  .more h2 { font-family: "Bungee", Impact, sans-serif; font-size: 1rem; color: var(--sand); margin-bottom: .6rem; }
+  .more a { display: block; color: var(--muted); text-decoration: none; padding: .3rem 0; font-weight: 600; }
+  .more a:hover { color: var(--flame); }
+  footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/">Jolly Tiki</a>
+    <a class="back" href="/#notes">← Field Notes</a>
+  </header>
+<article>
+  <div class="eyebrow">Field Notes · Civil 3D</div>
+  <h1>Merging surfaces in Civil 3D, step by step</h1>
+  <p class="lede">How to combine a topo survey with LiDAR (or any two surfaces) into one existing-ground surface, without a cliff at the seam.</p>
+
+  <p>The usual situation: you surveyed the site in detail, but the design needs ground beyond your limits, so you fill in the rest with county LiDAR. You want one surface where the survey wins wherever you have it and the LiDAR covers everything else. In Civil 3D that's a <strong>paste</strong>.</p>
+
+  <h2>How paste works</h2>
+  <p>When you paste surface B into surface A, B's triangles replace A's triangles wherever B exists. Civil 3D then triangulates across the gap at B's edge to tie the two together. Two things follow from that:</p>
+  <ul>
+    <li><strong>Order matters.</strong> Each paste overwrites what's under it, so the last surface pasted wins. Paste the broad, less accurate surface first and the detailed one last.</li>
+    <li><strong>It's live.</strong> The paste is an edit in the surface definition that refers back to the original. Change the survey surface and the merged surface goes out of date and rebuilds.</li>
+  </ul>
+
+  <h2>Step 1: Check the two surfaces agree</h2>
+  <p>Most bad merges are caused before you ever paste. Confirm both surfaces use the same:</p>
+  <ul>
+    <li><strong>Horizontal system and units.</strong> LiDAR often comes in meters or a different zone. A surface in the wrong place shows up as a wall or doesn't overlap at all.</li>
+    <li><strong>Vertical datum.</strong> NAVD 88 vs. NGVD 29 can differ by a few feet depending on where you are. That's a cliff at the seam.</li>
+    <li><strong>Feet.</strong> US survey feet vs. international feet matters on State Plane coordinates. See <a href="coordinate-systems.html" style="color:var(--flame)">Coordinate systems without the headache</a>.</li>
+  </ul>
+
+  <h2>Step 2: Measure the difference where they overlap</h2>
+  <p>Don't eyeball it. Create a <strong>TIN volume surface</strong> with the LiDAR as the base and the survey as the comparison. Its elevations are the difference between the two, and the surface statistics give you the mean.</p>
+  <ul>
+    <li>Look at the mean difference on hard, open ground like pavement. Grass, brush and buildings make LiDAR read high or low for real reasons.</li>
+    <li>A consistent offset of a few tenths usually means a datum or geoid issue. Fix it with <strong>Edit Surface → Raise/Lower Surface</strong> on the LiDAR, and note what you did.</li>
+    <li>A difference that varies all over the site isn't an offset. Don't raise or lower anything; just make sure the survey covers the area that matters.</li>
+  </ul>
+
+  <h2>Step 3: Make a new, empty surface for the merge</h2>
+  <p>Don't paste the survey into the LiDAR surface itself. Create a new TIN surface, for example <code>EG-COMPOSITE</code>. That keeps both originals untouched, so you can always see what came from where and re-do the merge.</p>
+
+  <h2>Step 4: Paste in order</h2>
+  <ol>
+    <li>Select <code>EG-COMPOSITE</code>. On the ribbon, choose <strong>Edit Surface → Paste Surface</strong>. Or in Prospector, expand the surface, then <strong>Definition</strong>, right-click <strong>Edits</strong> and choose <strong>Paste Surface</strong>.</li>
+    <li>Paste the <strong>LiDAR</strong> first.</li>
+    <li>Paste the <strong>survey</strong> second.</li>
+  </ol>
+  <p>If you paste them the wrong way round, the LiDAR covers your survey. Delete the paste edits from the definition and paste again in the right order.</p>
+
+  <h2>Step 5: Clean up the seam</h2>
+  <p>The survey surface's edge becomes the seam, so its edge has to be good.</p>
+  <ul>
+    <li>Give the survey surface an <strong>outer boundary</strong> just inside your last shots. Without one, long skinny triangles at the edge of the survey get pasted in and win over good LiDAR.</li>
+    <li>If there's a small step at the seam, pull the survey boundary in a few feet. That gives Civil 3D room to triangulate a gentle transition instead of a vertical face.</li>
+    <li>For big LiDAR files, clip the LiDAR to the area you need with its own outer boundary <em>before</em> pasting. The merged surface rebuilds much faster.</li>
+  </ul>
+
+  <h2>Step 6: Check the result</h2>
+  <ol>
+    <li>Turn on 1-ft contours and look along the seam. Contours should flow across it, not bunch up or jog.</li>
+    <li>Cut a quick profile across the seam in a couple of places.</li>
+    <li>Make a volume surface of the composite against the survey. Inside the survey limits it should be zero.</li>
+  </ol>
+
+  <div class="callout"><span class="k">Working with data shortcuts</span><p>If the survey and LiDAR surfaces are data shortcuts, create the shortcut references in the drawing first, then paste them into the composite there. Publish the composite as its own shortcut so the design team all use the same merged ground.</p></div>
+
+  <h2>Two other ways to combine surfaces</h2>
+  <h3>Existing plus proposed</h3>
+  <p>The same paste works for a finished-ground surface: paste existing ground first, then the proposed grading. Anywhere the design doesn't reach, you see existing ground. This is handy for profiles and for showing finished contours on a plan.</p>
+  <h3>Adding data instead of pasting</h3>
+  <p>You can also add the survey points and breaklines straight into the LiDAR surface. It works, but you lose track of which data is which, and LiDAR points under your survey still pull the triangles around. Paste is cleaner.</p>
+</article>
+  <div class="more">
+    <h2>More field notes</h2>
+    <a href="civil3d-survey-figures.html">Civil 3D survey figure tips →</a> <a href="coordinate-systems.html">Coordinate systems without the headache →</a> <a href="old-surveys.html">How they surveyed it back then →</a> <a href="grid-to-ground.html">Grid to ground, step by step →</a> <a href="traverse-adjustment.html">Traverse adjustment, step by step →</a> <a href="curve-layout.html">Laying out a curve, step by step →</a> <a href="leveling.html">Running a level loop, step by step →</a>
+  </div>
+  <footer>© <span id="yr"></span> jollytiki.com · General information, not legal or professional advice. Check your state's rules and your own work.</footer>
+</div>
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+<script data-goatcounter="https://jollytiki.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
