@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laying Out a Curve, Step by Step | Jolly Tiki</title>
+<meta name="description" content="A worked horizontal curve layout: solve the curve, station the PC and PT, compute deflection angles and chords, stake from the PC or by coordinates, and check the work.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d2a2e; --deep: #071a1d; --panel: #12363b; --line: #1f4b51;
+    --sand: #f4e3c1; --muted: #a9bfb9; --torch: #ff8a3d; --flame: #ffc94a;
+    --hibiscus: #e8475c; --leaf: #2f8f6b; --wood-dark: #44260f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #071a1d; }
+  body { font-family: "Karla", system-ui, sans-serif; color: var(--sand); line-height: 1.65;
+    background: radial-gradient(ellipse at 50% -10%, #1d4f55, transparent 55%), linear-gradient(180deg, var(--night), var(--deep) 70%);
+    background-attachment: fixed; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(244,227,193,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,227,193,.035) 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .wrap { position: relative; max-width: 760px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; }
+  .brand { color: var(--flame); font-family: "Bungee", Impact, sans-serif; font-size: 1.2rem; text-decoration: none; }
+  header a.back { color: var(--muted); text-decoration: none; font-weight: 600; }
+  header a.back:hover { color: var(--flame); }
+
+  .eyebrow { font-family: "JetBrains Mono", monospace; font-size: .78rem; letter-spacing: .14em; color: var(--torch); text-transform: uppercase; margin-top: 1.5rem; }
+  h1 { font-family: "Bungee", Impact, sans-serif; color: var(--flame); font-size: clamp(1.8rem, 5vw, 2.5rem); line-height: 1.1;
+       text-shadow: 0 3px 0 var(--wood-dark); margin: .4rem 0 .8rem; }
+  .lede { font-size: 1.15rem; color: var(--sand); opacity: .92; margin-bottom: 1.5rem; }
+  article h2 { font-family: "Bungee", Impact, sans-serif; color: var(--sand); font-size: 1.2rem; letter-spacing: .02em; margin: 2.2rem 0 .6rem; }
+  article h3 { color: var(--flame); font-size: 1.05rem; margin: 1.4rem 0 .3rem; }
+  article p { margin-bottom: .9rem; color: var(--sand); opacity: .9; }
+  article ul, article ol { margin: 0 0 1rem 1.3rem; color: var(--sand); opacity: .9; }
+  article li { margin-bottom: .35rem; }
+  article strong { color: var(--flame); font-weight: 700; }
+  code { font-family: "JetBrains Mono", monospace; font-size: .88em; color: var(--sand); background: var(--deep); padding: .05rem .35rem; border-radius: 4px; }
+  .formula { font-family: "JetBrains Mono", monospace; background: var(--deep); border: 1px solid var(--line); border-radius: 10px;
+             padding: .9rem 1.1rem; margin: 0 0 1rem; color: var(--flame); overflow-x: auto; white-space: pre; line-height: 1.6; }
+  .callout { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--torch); border-radius: 0 10px 10px 0;
+             padding: .9rem 1.1rem; margin: 1.2rem 0; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .k { font-family: "JetBrains Mono", monospace; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--torch); display: block; margin-bottom: .3rem; }
+  .tablewrap { overflow-x: auto; margin: 0 0 1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td, th { padding: .45rem .5rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+  td.num { font-family: "JetBrains Mono", monospace; white-space: nowrap; }
+  .more { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+  .more h2 { font-family: "Bungee", Impact, sans-serif; font-size: 1rem; color: var(--sand); margin-bottom: .6rem; }
+  .more a { display: block; color: var(--muted); text-decoration: none; padding: .3rem 0; font-weight: 600; }
+  .more a:hover { color: var(--flame); }
+  footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/">Jolly Tiki</a>
+    <a class="back" href="/#notes">← Field Notes</a>
+  </header>
+<article>
+  <div class="eyebrow">Field Notes · Construction</div>
+  <h1>Laying out a curve, step by step</h1>
+  <p class="lede">Take one horizontal curve from a PI station to stakes in the ground: solve it, station it, build the deflection table, then stake it from the PC or by coordinates.</p>
+
+  <p>The <a href="../curve.html" style="color:var(--flame)">Circular Curve Solver</a> gives you the curve's parts, stations and bearings. This note picks up where it stops and works out the layout by hand.</p>
+
+  <h2>The example curve</h2>
+  <p>A made-up road centerline curve, in feet, staked every 50 ft:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Given</th><th>Value</th></tr>
+    <tr><td>PI station</td><td class="num">12+45.67</td></tr>
+    <tr><td>PI coordinates</td><td class="num">N 10,000.000  E 10,000.000</td></tr>
+    <tr><td>Back tangent (into the PC)</td><td class="num">N 60°00'00" E</td></tr>
+    <tr><td>Delta, Δ</td><td class="num">24°30'00" right</td></tr>
+    <tr><td>Radius, R</td><td class="num">800.00</td></tr>
+  </table></div>
+
+  <h2>Step 1: Solve the curve</h2>
+  <p>In the curve solver, enter Δ <code>24 30 00</code> and R <code>800</code>. Under stationing, enter the PI station <code>12+45.67</code>, back tangent <code>N 60-00-00 E</code> and turns <strong>Right</strong>:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Solver result</th><th>Value</th></tr>
+    <tr><td>Tangent, T = R tan(Δ/2)</td><td class="num">173.70</td></tr>
+    <tr><td>Arc length, L = R Δ (radians)</td><td class="num">342.08</td></tr>
+    <tr><td>Long chord, C = 2R sin(Δ/2)</td><td class="num">339.48</td></tr>
+    <tr><td>Degree of curve (arc), D</td><td class="num">7°09'43"</td></tr>
+    <tr><td>Middle ordinate, M</td><td class="num">18.22</td></tr>
+    <tr><td>PC station</td><td class="num">10+71.97</td></tr>
+    <tr><td>PT station</td><td class="num">14+14.06</td></tr>
+    <tr><td>Chord bearing (PC → PT)</td><td class="num">N 72°15'00" E</td></tr>
+    <tr><td>Ahead tangent</td><td class="num">N 84°30'00" E</td></tr>
+  </table></div>
+  <p>Remember the stationing rule: <code>PC = PI − T</code>, but <code>PT = PC + L</code>, not PI + T. Stations follow the centerline, and on the curve the centerline is the arc.</p>
+
+  <h2>Step 2: The deflection angle</h2>
+  <p>The angle between the tangent at the PC and the chord to any point on the curve is half the central angle to that point. That's the deflection angle:</p>
+  <div class="formula">δ = l ÷ (2R)  radians,  or  δ° = l × 90 ÷ (πR)
+l = arc length from the PC to the point</div>
+  <p>With R = 800, every foot of arc is 2'08.92" of deflection, and a full 50 ft station is <code>1°47'25.78"</code>. At the PT, l = L, so the deflection is always exactly Δ/2. That's your built-in check.</p>
+
+  <h2>Step 3: The layout table</h2>
+  <p>The first station after the PC is 11+00, which is 28.03 ft along the arc. After that the stations are 50 ft apart, until a short piece at the end to reach the PT. The chord to each point is shorter than the arc:</p>
+  <div class="formula">Chord = 2R sin(δ)</div>
+  <div class="tablewrap"><table>
+    <tr><th>Station</th><th>Arc from PC</th><th>Deflection</th><th>Chord from PC</th><th>Chord from last</th></tr>
+    <tr><td class="num">PC 10+71.97</td><td class="num">0.00</td><td class="num">0°00'00"</td><td class="num">—</td><td class="num">—</td></tr>
+    <tr><td class="num">11+00</td><td class="num">28.03</td><td class="num">1°00'13"</td><td class="num">28.03</td><td class="num">28.03</td></tr>
+    <tr><td class="num">11+50</td><td class="num">78.03</td><td class="num">2°47'39"</td><td class="num">78.00</td><td class="num">49.99</td></tr>
+    <tr><td class="num">12+00</td><td class="num">128.03</td><td class="num">4°35'05"</td><td class="num">127.89</td><td class="num">49.99</td></tr>
+    <tr><td class="num">12+50</td><td class="num">178.03</td><td class="num">6°22'30"</td><td class="num">177.66</td><td class="num">49.99</td></tr>
+    <tr><td class="num">13+00</td><td class="num">228.03</td><td class="num">8°09'56"</td><td class="num">227.26</td><td class="num">49.99</td></tr>
+    <tr><td class="num">13+50</td><td class="num">278.03</td><td class="num">9°57'22"</td><td class="num">276.63</td><td class="num">49.99</td></tr>
+    <tr><td class="num">14+00</td><td class="num">328.03</td><td class="num">11°44'48"</td><td class="num">325.73</td><td class="num">49.99</td></tr>
+    <tr><td class="num">PT 14+14.06</td><td class="num">342.08</td><td class="num">12°15'00"</td><td class="num">339.48</td><td class="num">14.06</td></tr>
+  </table></div>
+  <p>Two checks before you leave the truck: the last deflection is Δ/2 (12°15'00"), and the last chord from the PC is the long chord from the solver (339.48). If either is off, the table is wrong.</p>
+  <p>Work deflections from the <em>unrounded</em> arc lengths, and round only the final angle. Adding up rounded 50 ft deflections drifts a second or two by the end of a long curve.</p>
+
+  <h2>Step 4: Stake it from the PC</h2>
+  <ol>
+    <li>Set up on the PC and backsight the PI with the plate at <code>0°00'00"</code>. You're now looking down the back tangent's direction of travel.</li>
+    <li>For a curve to the right, turn the deflection angle to the right. For a curve to the left, turn it left, or set <code>360° − δ</code> if you only turn right.</li>
+    <li>Set each station at its deflection and its distance. With a total station, use the chord from the PC. With a tape, measure the chord from the last station instead and swing it onto the line of sight.</li>
+    <li>When you reach the PT, check it against the PT you set from the PI along the ahead tangent. They should land on top of each other.</li>
+  </ol>
+
+  <div class="callout"><span class="k">Arc or chord?</span><p>Stations are measured along the arc, but you can only measure a straight line between two points. Here a 50 ft arc is a 49.99 ft chord, short by 0.008 ft. That's nothing on this curve, but the difference grows with the cube of the length over the radius squared. On a 100 ft radius cul-de-sac, a 50 ft arc is a 49.48 ft chord, and staking 50.00 puts every point half a foot off.</p></div>
+
+  <h3>Moving up on the curve</h3>
+  <p>If buildings, brush or a hill block the view from the PC, move up to the last good station. Backsight the PC with the plate at <code>0°00'00"</code>, plunge the scope, and keep turning the same deflections from the table. It works because the angle between the extended chord and the next chord is always half the arc between them. You don't have to recompute anything.</p>
+
+  <h2>Step 5: Or stake it by coordinates</h2>
+  <p>With a data collector it's usually easier to give every station a coordinate and stake from whatever control is handy. Start from the PI and walk back along the tangent to the PC, then over to the center:</p>
+  <div class="formula">PC     = PI − T along the back tangent (N 60° E)
+Center = PC + R along the radial (S 30° E for a right curve)
+Point  = Center + R at azimuth (330° + 2δ)</div>
+  <p>The radial from the center to the PC points back at azimuth 330° (N 30° W). Each point on the curve is that azimuth plus twice its deflection angle, since the central angle is twice the deflection:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Point</th><th>Northing</th><th>Easting</th></tr>
+    <tr><td>Center</td><td class="num">9,220.331</td><td class="num">10,249.574</td></tr>
+    <tr><td>PC 10+71.97</td><td class="num">9,913.151</td><td class="num">9,849.574</td></tr>
+    <tr><td>11+00</td><td class="num">9,926.737</td><td class="num">9,874.087</td></tr>
+    <tr><td>11+50</td><td class="num">9,948.810</td><td class="num">9,918.941</td></tr>
+    <tr><td>12+00</td><td class="num">9,968.039</td><td class="num">9,965.087</td></tr>
+    <tr><td>12+50</td><td class="num">9,984.348</td><td class="num">10,012.344</td></tr>
+    <tr><td>13+00</td><td class="num">9,997.674</td><td class="num">10,060.527</td></tr>
+    <tr><td>13+50</td><td class="num">10,007.964</td><td class="num">10,109.449</td></tr>
+    <tr><td>14+00</td><td class="num">10,015.178</td><td class="num">10,158.917</td></tr>
+    <tr><td>PT 14+14.06</td><td class="num">10,016.648</td><td class="num">10,172.897</td></tr>
+  </table></div>
+  <p>Check the PT a second way, from the PI along the ahead tangent: <code>PI + 173.70 at N 84°30' E</code> gives the same 10,016.648, 10,172.897. Then <a href="../inverse.html" style="color:var(--flame)">inverse</a> from the center to a few points. Every one should come out exactly 800.00. And inversing between neighbors should give the 49.99 chords from the table.</p>
+
+  <h2>Offsets</h2>
+  <p>Edge of pavement, curb and right-of-way stakes go on the same radial lines, at a different radius. For an offset to the outside of the curve, add it to R. For the inside, subtract it. By coordinates that's easy: same center, same azimuth, new radius. By deflections, treat the offset line as its own curve, with its own PC on the PC's radial. The deflection angles stay the same, since the central angles haven't changed, but every chord has to be recomputed with the new radius.</p>
+
+  <div class="callout"><span class="k">Before you drive the first stake</span><p>Check the PC and PT against the plans, and check that the plan's D is an <strong>arc</strong> definition. Railroads and some older highway plans use the <strong>chord</strong> definition (a 100 ft chord subtends D), which gives a slightly different radius for the same D. On this curve the chord definition would mean R = 800.52 instead of 800.00. Use the radius on the plans whenever there is one.</p></div>
+</article>
+  <div class="more">
+    <h2>More field notes</h2>
+    <a href="traverse-adjustment.html">Traverse adjustment, step by step →</a> <a href="grid-to-ground.html">Grid to ground, step by step →</a> <a href="coordinate-systems.html">Coordinate systems without the headache →</a> <a href="civil3d-survey-figures.html">Civil 3D survey figure tips →</a> <a href="old-surveys.html">How they surveyed it back then →</a>
+  </div>
+  <footer>© <span id="yr"></span> jollytiki.com · General information, not legal or professional advice. Check your state's rules and your own work.</footer>
+</div>
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+<script data-goatcounter="https://jollytiki.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
